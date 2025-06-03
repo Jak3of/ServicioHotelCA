@@ -122,11 +122,9 @@ Para contribuir al proyecto:
 
 ## Licencia
 
-Este proyecto es parte del curso de Programación II.
-Universidad [Nombre] - 2023
+Este proyecto es parte del curso Integrador I: Sistemas Software- Sección 44647.
+Universidad UTP Lima Sur.
 
 ## Contacto
 
-- Desarrollador: [Tu Nombre]
-- Email: [Tu Email]
-- GitHub: [Tu GitHub]
+- Desarrollador: Nelson, Victor, Yuli
