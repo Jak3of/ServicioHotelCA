@@ -4,17 +4,103 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import com.google.common.base.Preconditions;
+import com.mycompany.avanceproyecto.controller.LoginController;
+import javax.swing.*;
+import java.awt.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author Nicolas
  */
 public class login extends javax.swing.JFrame {
-
+    private static final Logger logger = LoggerFactory.getLogger(login.class);
+    private JTextField txtUsername;
+    private JPasswordField txtPassword;
+    private JButton btnLogin;
+    private LoginController controller;
+    
     /**
      * Creates new form login
      */
     public login() {
         initComponents();
+        setupLoginForm();
+    }
+    
+    private void setupLoginForm() {
+        // Inicializar controlador
+        this.controller = new LoginController(this);
+        
+        // Configurar ventana
+        setTitle("Login - Hotel Casa Andina");
+        setSize(400, 300);
+        setLocationRelativeTo(null);
+        
+        // Limpiar el contenido existente
+        getContentPane().removeAll();
+        
+        // Crear panel principal con GridBagLayout
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        
+        // Configurar componentes
+        txtUsername = new JTextField(20);
+        txtPassword = new JPasswordField(20);
+        btnLogin = new JButton("Iniciar Sesión");
+        
+        // Agregar componentes al panel
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.gridx = 0; gbc.gridy = 0;
+        mainPanel.add(new JLabel("Usuario:"), gbc);
+        
+        gbc.gridx = 1;
+        mainPanel.add(txtUsername, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 1;
+        mainPanel.add(new JLabel("Contraseña:"), gbc);
+        
+        gbc.gridx = 1;
+        mainPanel.add(txtPassword, gbc);
+        
+        gbc.gridx = 0; gbc.gridy = 2;
+        gbc.gridwidth = 2;
+        mainPanel.add(btnLogin, gbc);
+        
+        // Agregar acción al botón
+        btnLogin.addActionListener(e -> handleLogin());
+        
+        // Agregar panel al frame y actualizar
+        setContentPane(mainPanel);
+        revalidate();
+        repaint();
+    }
+    
+    private void handleLogin() {
+        try {
+            String username = txtUsername.getText();
+            String password = new String(txtPassword.getPassword());
+            
+            // Validar campos usando Guava
+            Preconditions.checkArgument(!username.isEmpty(), "El usuario no puede estar vacío");
+            Preconditions.checkArgument(!password.isEmpty(), "La contraseña no puede estar vacía");
+            
+            if(controller.autenticar(username, password)) {
+                logger.info("Login exitoso para usuario: {}", username);
+                JOptionPane.showMessageDialog(this, "Bienvenido al sistema");
+                // TODO: Abrir ventana principal
+            } else {
+                logger.warn("Intento de login fallido para usuario: {}", username);
+                JOptionPane.showMessageDialog(this, "Credenciales incorrectas",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IllegalArgumentException e) {
+            logger.error("Error de validación", e);
+            JOptionPane.showMessageDialog(this, e.getMessage(),
+                "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -41,41 +127,6 @@ public class login extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(login.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new login().setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables

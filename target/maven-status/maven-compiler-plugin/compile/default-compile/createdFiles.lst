@@ -1,1 +1,15 @@
+com\mycompany\avanceproyecto\controller\LoginController.class
+com\mycompany\avanceproyecto\view\login$1.class
+com\mycompany\avanceproyecto\repository\UsuarioRepository.class
+com\mycompany\avanceproyecto\model\ConsumoServicio.class
+com\mycompany\avanceproyecto\model\Alojamiento.class
+com\mycompany\avanceproyecto\service\UsuarioService.class
+com\mycompany\avanceproyecto\view\login.class
 com\mycompany\avanceproyecto\AvanceProyecto.class
+com\mycompany\avanceproyecto\config\DatabaseConfig.class
+com\mycompany\avanceproyecto\model\Factura.class
+com\mycompany\avanceproyecto\model\Servicio.class
+com\mycompany\avanceproyecto\config\DatabaseInitializer.class
+com\mycompany\avanceproyecto\model\Cliente.class
+com\mycompany\avanceproyecto\model\Habitacion.class
+com\mycompany\avanceproyecto\model\Usuario.class
