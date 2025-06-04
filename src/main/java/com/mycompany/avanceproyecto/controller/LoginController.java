@@ -1,6 +1,6 @@
 package com.mycompany.avanceproyecto.controller;
 
-import com.mycompany.avanceproyecto.model.Usuario;
+import com.mycompany.avanceproyecto.model.Usuarios;
 import com.mycompany.avanceproyecto.service.UsuarioService;
 import com.mycompany.avanceproyecto.view.login;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,7 @@ public class LoginController {
         }
 
         try {
-            Usuario usuario = usuarioService.autenticarUsuario(username, password);
+            Usuarios usuario = usuarioService.autenticarUsuario(username, password);
             boolean isValid = usuario != null;
             logger.info("Intento de login para usuario: {} - Resultado: {}", username, isValid);
             return isValid;
@@ -35,7 +35,7 @@ public class LoginController {
         }
     }
     
-    public void iniciarSesion(Usuario usuario) {
+    public void iniciarSesion(Usuarios usuario) {
         // Lógica para iniciar sesión y abrir ventana principal
     }
 }

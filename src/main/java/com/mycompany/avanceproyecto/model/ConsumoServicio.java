@@ -1,24 +1,28 @@
 
 package com.mycompany.avanceproyecto.model;
 
-import com.mycompany.avanceproyecto.model.Servicio;
-import java.time.LocalDateTime;
+
+
 
 
 public class ConsumoServicio {
     private int id;
-    private int numeroHabitacion;
-    private Servicio servicio;
-    private LocalDateTime fechaHora;
+     private Alojamientos alojamiento;
+    private Servicios servicio;
+    private int cantidad;
 
-    public ConsumoServicio(int id, int numeroHabitacion, Servicio servicio, LocalDateTime fechaHora) {
-        this.id = id;
-        this.numeroHabitacion = numeroHabitacion;
-        this.servicio = servicio;
-        this.fechaHora = fechaHora;
+    public ConsumoServicio() {
     }
+
     
     
+    
+    public ConsumoServicio(int id, Alojamientos alojamiento, Servicios servicio, int cantidad) {
+        this.id = id;
+        this.alojamiento = alojamiento;
+        this.servicio = servicio;
+        this.cantidad = cantidad;
+    }
 
     public int getId() {
         return id;
@@ -28,29 +32,34 @@ public class ConsumoServicio {
         this.id = id;
     }
 
-    public int getNumeroHabitacion() {
-        return numeroHabitacion;
+    public Alojamientos getAlojamiento() {
+        return alojamiento;
     }
 
-    public void setNumeroHabitacion(int numeroHabitacion) {
-        this.numeroHabitacion = numeroHabitacion;
+    public void setAlojamiento(Alojamientos alojamiento) {
+        this.alojamiento = alojamiento;
     }
 
-    public Servicio getServicio() {
+    public Servicios getServicio() {
         return servicio;
     }
 
-    public void setServicio(Servicio servicio) {
+    public void setServicio(Servicios servicio) {
         this.servicio = servicio;
     }
 
-    public LocalDateTime getFechaHora() {
-        return fechaHora;
+    public int getCantidad() {
+        return cantidad;
     }
 
-    public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
+    public void setCantidad(int cantidad) {
+        this.cantidad = cantidad;
     }
+
+    
+    
+    
+
     
     
     

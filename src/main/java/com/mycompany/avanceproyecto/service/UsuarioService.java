@@ -1,6 +1,6 @@
 package com.mycompany.avanceproyecto.service;
 
-import com.mycompany.avanceproyecto.model.Usuario;
+import com.mycompany.avanceproyecto.model.Usuarios;
 import com.mycompany.avanceproyecto.repository.UsuarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ public class UsuarioService {
         this.repository = new UsuarioRepository();
     }
     
-    public Usuario autenticarUsuario(String username, String password) {
+    public Usuarios autenticarUsuario(String username, String password) {
         return repository.findByUsernameAndPassword(username, password);
     }
 }

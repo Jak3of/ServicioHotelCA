@@ -1,7 +1,7 @@
 package com.mycompany.avanceproyecto.repository;
 
 import com.mycompany.avanceproyecto.config.DatabaseConfig;
-import com.mycompany.avanceproyecto.model.Usuario;
+import com.mycompany.avanceproyecto.model.Usuarios;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class UsuarioRepository {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
     
-    public Usuario findByUsernameAndPassword(String username, String password) {
+    public Usuarios findByUsernameAndPassword(String username, String password) {
         String sql = "SELECT * FROM usuarios WHERE nombre_usuario = ? AND contrasena = ?";
         
         try (Connection conn = DatabaseConfig.getConnection();
@@ -22,7 +22,7 @@ public class UsuarioRepository {
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Usuario(
+                    return new Usuarios(
                         rs.getInt("id"),
                         rs.getString("nombre_usuario"),
                         rs.getString("contrasena"),
