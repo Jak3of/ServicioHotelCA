@@ -90,7 +90,9 @@ public class login extends javax.swing.JFrame {
             if(controller.autenticar(username, password)) {
                 logger.info("Login exitoso para usuario: {}", username);
                 JOptionPane.showMessageDialog(this, "Bienvenido al sistema");
-                // TODO: Abrir ventana principal
+                // Abrir ventana de inicio y cerrar login
+                new INICIO().setVisible(true);
+                this.dispose();
             } else {
                 logger.warn("Intento de login fallido para usuario: {}", username);
                 JOptionPane.showMessageDialog(this, "Credenciales incorrectas",

@@ -4,17 +4,76 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  *
  * @author Pablo Tello
  */
-public class Habitacion extends javax.swing.JFrame {
+public class Habitacion extends JInternalFrame {
 
     /**
      * Creates new form Habitacion
      */
     public Habitacion() {
         initComponents();
+        setupForm();
+    }
+
+    private void setupForm() {
+        // Configurar ventana interna
+        setTitle("Gestión de Habitaciones");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setSize(1000, 600);
+
+        // Configurar panel de botones
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+
+        // Configurar botones con tamaño uniforme
+        Dimension buttonSize = new Dimension(100, 30);
+        btnNuevo.setPreferredSize(buttonSize);
+        btnguardar.setPreferredSize(buttonSize);
+        btncancelar.setPreferredSize(buttonSize);
+        btneliminar.setPreferredSize(buttonSize);
+        btnsalir.setPreferredSize(buttonSize);
+
+        // Agregar botones al panel
+        buttonPanel.add(btnNuevo);
+        buttonPanel.add(btnguardar);
+        buttonPanel.add(btncancelar);
+        buttonPanel.add(btneliminar);
+        buttonPanel.add(btnsalir);
+
+        // Agregar el panel de botones al final del panel jPanel3
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = GridBagConstraints.RELATIVE;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(15, 0, 10, 0);
+
+        jPanel3.add(buttonPanel, gbc);
+
+        // Mejorar apariencia de los campos
+        Font labelFont = new Font("Segoe UI", Font.BOLD, 12);
+        jLabel2.setFont(labelFont);
+        jLabel4.setFont(labelFont);
+        jLabel5.setFont(labelFont);
+        jLabel6.setFont(labelFont);
+        jLabel7.setFont(labelFont);
+        jLabel9.setFont(labelFont);
+        jLabel10.setFont(labelFont);
+
+        // Ajustar tamaños de componentes
+        txtNumero.setPreferredSize(new Dimension(150, 25));
+        txtNumero1.setPreferredSize(new Dimension(150, 25));
+        cbopiso.setPreferredSize(new Dimension(150, 25));
+        cbopiso1.setPreferredSize(new Dimension(150, 25));
+        cbopiso2.setPreferredSize(new Dimension(150, 25));
     }
 
     /**

@@ -4,17 +4,56 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author Pablo Tello
  */
-public class Alojamiento extends javax.swing.JFrame {
+public class Alojamiento extends JInternalFrame {
 
     /**
      * Creates new form Alojamiento
      */
     public Alojamiento() {
         initComponents();
+        setupButtons(); // Llamar después de initComponents
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setTitle("Gestión de Alojamientos");
+        setSize(800, 600);
+    }
+
+    private void setupButtons() {
+        // Crear panel específico para botones con FlowLayout
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        
+        // Configurar botones con tamaño uniforme
+        Dimension buttonSize = new Dimension(100, 30);
+        btnNuevo.setPreferredSize(buttonSize);
+        btnguardar.setPreferredSize(buttonSize);
+        btncancelar.setPreferredSize(buttonSize);
+        
+        // Agregar botones al panel
+        buttonPanel.add(btnNuevo);
+        buttonPanel.add(btnguardar);
+        buttonPanel.add(btncancelar);
+        
+        // Agregar el panel de botones al final del panel principal
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = GridBagConstraints.RELATIVE;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(15, 0, 10, 0);
+        
+        jPanel3.add(buttonPanel, gbc);
     }
 
     /**

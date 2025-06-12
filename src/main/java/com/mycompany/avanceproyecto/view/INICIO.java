@@ -4,6 +4,12 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  *
  * @author Pablo Tello
@@ -15,6 +21,15 @@ public class INICIO extends javax.swing.JFrame {
      */
     public INICIO() {
         initComponents();
+        // Hacer que la ventana inicie maximizada
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        
+        // Configurar el layout para que el desktopPane ocupe todo el espacio
+        getContentPane().setLayout(new BorderLayout());
+        getContentPane().add(desktopPane, BorderLayout.CENTER);
+        
+        // Dar color de fondo al desktopPane (opcional)
+        desktopPane.setBackground(new Color(240, 240, 240));
     }
 
     /**
@@ -96,20 +111,64 @@ public class INICIO extends javax.swing.JFrame {
 
         setJMenuBar(menuBar);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 1072, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(desktopPane, javax.swing.GroupLayout.PREFERRED_SIZE, 558, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
+        // Configurar eventos del menú
+        // Menú Archivo
+        cutMenuItem.addActionListener(e -> {
+            JInternalFrame frame = new Habitacion();
+            frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+            desktopPane.add(frame);
+            frame.setVisible(true);
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ex) {}
+        });
+
+        copyMenuItem.addActionListener(e -> {
+            Servicio frame = new Servicio();
+            desktopPane.add(frame);
+            frame.setVisible(true);
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ex) {}
+        });
+
+        // Menú Reserva
+        contentMenuItem.addActionListener(e -> {
+            JInternalFrame frame = new Alojamiento();
+            frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+            desktopPane.add(frame);
+            frame.setVisible(true);
+            try {
+                frame.setSelected(true);
+            } catch (java.beans.PropertyVetoException ex) {}
+        });
+
+        aboutMenuItem.addActionListener(e -> {
+            // TODO: Implementar ventana Clientes
+            JOptionPane.showMessageDialog(this, "Módulo de Clientes en desarrollo");
+        });
+
+        jMenuItem1.addActionListener(e -> {
+            new Factura().setVisible(true); // Abre ventana Pagos
+        });
+
+        // Menú Configuraciones
+        jMenuItem2.addActionListener(e -> {
+            new Usuario().setVisible(true); // Abre ventana Usuarios
+        });
+
+        // Menú Salir
+        jMenu3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int option = JOptionPane.showConfirmDialog(null, 
+                    "¿Desea salir del sistema?",
+                    "Confirmar salida",
+                    JOptionPane.YES_NO_OPTION);
+                if (option == JOptionPane.YES_OPTION) {
+                    System.exit(0);
+                }
+            }
+        });
 
         pack();
     }// </editor-fold>//GEN-END:initComponents

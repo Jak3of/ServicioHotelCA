@@ -22,9 +22,11 @@ public class AvanceProyecto {
         // Inicializar base de datos
         DatabaseInitializer.initializeDatabase();
         
-        // Iniciar interfaz gráfica
+        // Iniciar interfaz gráfica con login
         java.awt.EventQueue.invokeLater(() -> {
-            new login().setVisible(true);
+            login loginForm = new login();
+            loginForm.setLocationRelativeTo(null); // Centrar en pantalla
+            loginForm.setVisible(true);
         });
     }
 }

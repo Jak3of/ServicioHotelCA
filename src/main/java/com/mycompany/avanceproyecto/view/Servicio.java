@@ -4,17 +4,37 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import javax.swing.*;
+import java.awt.*;
+
 /**
  *
  * @author Pablo Tello
  */
-public class Servicio extends javax.swing.JFrame {
+public class Servicio extends JInternalFrame {
 
     /**
      * Creates new form Servicio
      */
     public Servicio() {
         initComponents();
+        setupFrame();
+    }
+
+    private void setupFrame() {
+        // Configurar ventana interna
+        setTitle("Gestión de Servicios");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setSize(1000, 600);
+        
+        // Remover el EXIT_ON_CLOSE ya que es un JInternalFrame
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+
+        // Configurar botón salir para que solo cierre esta ventana
+        btnsalir.addActionListener(e -> dispose());
     }
 
     /**
