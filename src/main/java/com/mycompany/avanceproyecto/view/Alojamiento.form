@@ -144,10 +144,10 @@
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <EmptySpace min="-2" pref="172" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="dcfechaingreso" min="-2" max="-2" attributes="0"/>
-                                  <Component id="dcfechasalida" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="txtcosto" alignment="0" min="-2" pref="117" max="-2" attributes="0"/>
+                                  <Component id="dcfechaingreso" alignment="0" pref="204" max="32767" attributes="0"/>
+                                  <Component id="dcfechasalida" alignment="0" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>

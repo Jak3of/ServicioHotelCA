@@ -1,4 +1,3 @@
-
 package com.mycompany.avanceproyecto.daos.impl;
 
 import com.mycompany.avanceproyecto.config.DatabaseConfig;
@@ -18,10 +17,10 @@ public class HabitacionDAOImpl implements HabitacionDAO {
     public void insertar(Habitaciones habitacion) throws Exception {
         String sql = "INSERT INTO habitaciones (numero, tipo, precio, disponible) VALUES (?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, habitacion.getNumero());
+            stmt.setString(1, habitacion.getNumero());
             stmt.setString(2, habitacion.getTipo());
             stmt.setDouble(3, habitacion.getPrecio());
-            stmt.setBoolean(4, habitacion.isDisponible());
+            stmt.setInt(4, habitacion.isDisponible() ? 1 : 0); // Cambiado a isDisponible
             stmt.executeUpdate();
         }
     }
@@ -35,7 +34,7 @@ public class HabitacionDAOImpl implements HabitacionDAO {
                 if (rs.next()) {
                     return new Habitaciones(
                         rs.getInt("id"),
-                        rs.getInt("numero"),
+                        rs.getString("numero"),
                         rs.getString("tipo"),                        
                         rs.getInt("disponible") == 1,
                         rs.getDouble("precio")
@@ -54,7 +53,7 @@ public class HabitacionDAOImpl implements HabitacionDAO {
             while (rs.next()) {
                 lista.add(new Habitaciones(
                     rs.getInt("id"),
-                    rs.getInt("numero"),
+                    rs.getString("numero"),
                     rs.getString("tipo"),                  
                     rs.getInt("disponible") == 1,
                     rs.getDouble("precio")
@@ -68,10 +67,10 @@ public class HabitacionDAOImpl implements HabitacionDAO {
     public void actualizar(Habitaciones habitacion) throws Exception {
         String sql = "UPDATE habitaciones SET numero = ?, tipo = ?, precio = ?, disponible = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, habitacion.getNumero());
+            stmt.setString(1, habitacion.getNumero());
             stmt.setString(2, habitacion.getTipo());
             stmt.setDouble(3, habitacion.getPrecio());
-            stmt.setBoolean(4, habitacion.isDisponible());
+            stmt.setInt(4, habitacion.isDisponible() ? 1 : 0); // Cambiado a isDisponible
             stmt.setInt(5, habitacion.getId());
             stmt.executeUpdate();
         }
@@ -84,5 +83,25 @@ public class HabitacionDAOImpl implements HabitacionDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
+    }
+
+    @Override
+    public List<Habitaciones> listarDisponibles() throws Exception {
+        String sql = "SELECT * FROM habitaciones WHERE disponible = 1";
+        List<Habitaciones> lista = new ArrayList<>();
+        try (Connection conn = DatabaseConfig.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                lista.add(new Habitaciones(
+                    rs.getInt("id"),
+                    rs.getString("numero"),
+                    rs.getString("tipo"),
+                    true,
+                    rs.getDouble("precio")
+                ));
+            }
+        }
+        return lista;
     }
 }

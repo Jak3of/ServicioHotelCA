@@ -1,4 +1,3 @@
-
 package com.mycompany.avanceproyecto.daos;
 
 import com.mycompany.avanceproyecto.model.Habitaciones;
@@ -10,4 +9,5 @@ public interface HabitacionDAO {
     List<Habitaciones> listar() throws Exception;
     void actualizar(Habitaciones habitacion) throws Exception;
     void eliminar(int id) throws Exception;
+    List<Habitaciones> listarDisponibles() throws Exception; // Método que faltaba
 }

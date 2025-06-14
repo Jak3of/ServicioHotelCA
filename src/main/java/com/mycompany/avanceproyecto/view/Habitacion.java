@@ -6,6 +6,10 @@ package com.mycompany.avanceproyecto.view;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import com.mycompany.avanceproyecto.model.Habitaciones;
+import com.mycompany.avanceproyecto.controller.HabitacionController;
 
 /**
  *
@@ -19,20 +23,51 @@ public class Habitacion extends JInternalFrame {
     public Habitacion() {
         initComponents();
         setupForm();
+        new HabitacionController(this);
     }
 
     private void setupForm() {
-        // Configurar ventana interna
-        setTitle("Gestión de Habitaciones");
-        setClosable(true);
-        setIconifiable(true);
-        setMaximizable(true);
-        setResizable(true);
-        setSize(1000, 600);
+        // Configuración básica de la ventana
+        setTitle("Gestión de Habitaciones"); 
+        
+        // Configurar tabla con orden fijo de columnas
+        String[] columnas = {"ID", "Número", "Estado", "Precio", "Tipo"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Hace que ninguna celda sea editable
+            }
+        };
+        tablalistadohabitacion.setModel(modelo);
+        
+        // Evitar que se reordenen las columnas
+        tablalistadohabitacion.getTableHeader().setReorderingAllowed(false);
 
-        // Configurar panel de botones
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        // Establecer ancho de columnas
+        tablalistadohabitacion.getColumnModel().getColumn(0).setPreferredWidth(50);  // ID
+        tablalistadohabitacion.getColumnModel().getColumn(1).setPreferredWidth(100); // Número
+        tablalistadohabitacion.getColumnModel().getColumn(2).setPreferredWidth(100); // Estado
+        tablalistadohabitacion.getColumnModel().getColumn(3).setPreferredWidth(100); // Precio
+        tablalistadohabitacion.getColumnModel().getColumn(4).setPreferredWidth(150); // Tipo
 
+        // Habilitar selección única en la tabla
+        tablalistadohabitacion.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Eventos de tabla
+        tablalistadohabitacion.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadohabitacion.getSelectedRow();
+                if (row != -1) {
+                    mostrarDatosSeleccionados(row);
+                }
+            }
+        });
+
+        // Eventos de botones
+        btnNuevo.addActionListener(e -> limpiarCampos());
+        btncancelar.addActionListener(e -> limpiarCampos());
+        btnsalir.addActionListener(e -> dispose());
+        
         // Configurar botones con tamaño uniforme
         Dimension buttonSize = new Dimension(100, 30);
         btnNuevo.setPreferredSize(buttonSize);
@@ -40,39 +75,73 @@ public class Habitacion extends JInternalFrame {
         btncancelar.setPreferredSize(buttonSize);
         btneliminar.setPreferredSize(buttonSize);
         btnsalir.setPreferredSize(buttonSize);
-
-        // Agregar botones al panel
-        buttonPanel.add(btnNuevo);
-        buttonPanel.add(btnguardar);
-        buttonPanel.add(btncancelar);
-        buttonPanel.add(btneliminar);
-        buttonPanel.add(btnsalir);
-
-        // Agregar el panel de botones al final del panel jPanel3
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = GridBagConstraints.RELATIVE;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(15, 0, 10, 0);
-
-        jPanel3.add(buttonPanel, gbc);
+        btsbuscar.setPreferredSize(buttonSize);
 
         // Mejorar apariencia de los campos
         Font labelFont = new Font("Segoe UI", Font.BOLD, 12);
         jLabel2.setFont(labelFont);
-        
         jLabel6.setFont(labelFont);
-        
         jLabel9.setFont(labelFont);
         jLabel10.setFont(labelFont);
 
         // Ajustar tamaños de componentes
         txtNumero.setPreferredSize(new Dimension(150, 25));
         txtNumero1.setPreferredSize(new Dimension(150, 25));
-        
         cbopiso1.setPreferredSize(new Dimension(150, 25));
         cbopiso2.setPreferredSize(new Dimension(150, 25));
+        
+        // Configurar colores de botones
+        Color btnBackground = new Color(64, 123, 255);
+        Color btnForeground = Color.WHITE;
+        
+        btnNuevo.setBackground(btnBackground);
+        btnguardar.setBackground(btnBackground);
+        btncancelar.setBackground(btnBackground);
+        btneliminar.setBackground(btnBackground);
+        btnsalir.setBackground(btnBackground);
+        btsbuscar.setBackground(btnBackground);
+        
+        btnNuevo.setForeground(btnForeground);
+        btnguardar.setForeground(btnForeground);
+        btncancelar.setForeground(btnForeground);
+        btneliminar.setForeground(btnForeground);
+        btnsalir.setForeground(btnForeground);
+        btsbuscar.setForeground(btnForeground);
+    }
+
+    private void mostrarDatosSeleccionados(int row) {
+        // Ajustar el orden de lectura de las columnas
+        txtIdHabita.setText(tablalistadohabitacion.getValueAt(row, 0).toString());  // ID
+        txtNumero.setText(tablalistadohabitacion.getValueAt(row, 1).toString());    // Número
+        cbopiso1.setSelectedItem(tablalistadohabitacion.getValueAt(row, 3));        // Estado
+        txtNumero1.setText(tablalistadohabitacion.getValueAt(row, 4).toString());   // Precio
+        cbopiso2.setSelectedItem(tablalistadohabitacion.getValueAt(row, 2));        // Tipo
+    }
+
+    public void limpiarCampos() {
+        txtIdHabita.setText("");
+        txtNumero.setText("");
+        txtNumero1.setText("");
+        cbopiso1.setSelectedIndex(0);
+        cbopiso2.setSelectedIndex(0);
+        tablalistadohabitacion.clearSelection();
+    }
+
+    public void actualizarTabla(List<Habitaciones> habitaciones) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadohabitacion.getModel();
+        modelo.setRowCount(0);
+        
+        for (Habitaciones h : habitaciones) {
+            modelo.addRow(new Object[]{
+                h.getId(),             // Columna 0: ID
+                h.getNumero(),         // Columna 1: Número
+                h.isDisponible() ? "DISPONIBLE" : "OCUPADO",  // Columna 2: Estado
+                h.getPrecio(),         // Columna 3: Precio
+                h.getTipo()            // Columna 4: Tipo
+            });
+        }
+        
+        lbltotalregistro.setText("Total: " + habitaciones.size());
     }
 
     /**
@@ -435,4 +504,50 @@ public class Habitacion extends JInternalFrame {
     private javax.swing.JTextField txtNumero1;
     private javax.swing.JTextField txtbuscar;
     // End of variables declaration//GEN-END:variables
+
+    // Agregar getters
+    public JButton getBtnNuevo() {
+        return btnNuevo;
+    }
+
+    public JButton getBtnGuardar() {
+        return btnguardar;
+    }
+
+    public JButton getBtnEliminar() {
+        return btneliminar;
+    }
+
+    public JButton getBtnBuscar() {
+        return btsbuscar;
+    }
+
+    // Agregar estos getters adicionales
+    public JTextField getTxtNumero() {
+        return txtNumero;
+    }
+
+    public JTextField getTxtPrecio() {
+        return txtNumero1;  // Renombrar este campo sería mejor
+    }
+
+    public JComboBox<String> getCboEstado() {
+        return cbopiso1;
+    }
+
+    public JComboBox<String> getCboTipoHabitacion() {
+        return cbopiso2;
+    }
+
+    public JTable getTablaHabitaciones() {
+        return tablalistadohabitacion;
+    }
+
+    // Agregar getter para el campo ID
+    public JTextField getTxtIdHabita() {
+        return txtIdHabita;
+    }
+
+    
 }
+

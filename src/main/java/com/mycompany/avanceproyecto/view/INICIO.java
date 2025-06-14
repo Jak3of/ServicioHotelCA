@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
  * @author Pablo Tello
  */
 public class INICIO extends javax.swing.JFrame {
+    private static final Logger logger = LoggerFactory.getLogger(INICIO.class);
 
     /**
      * Creates new form INICIO
@@ -114,38 +115,58 @@ public class INICIO extends javax.swing.JFrame {
         // Configurar eventos del menú
         // Menú Archivo
         cutMenuItem.addActionListener(e -> {
-            JInternalFrame frame = new Habitacion();
-            frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-            desktopPane.add(frame);
-            frame.setVisible(true);
             try {
+                logger.info("Abriendo ventana Habitaciones");
+                JInternalFrame frame = new Habitacion();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                desktopPane.add(frame);
+                frame.setVisible(true);
                 frame.setSelected(true);
-            } catch (java.beans.PropertyVetoException ex) {}
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Habitaciones", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Habitaciones");
+            }
         });
 
         copyMenuItem.addActionListener(e -> {
-            Servicio frame = new Servicio();
-            desktopPane.add(frame);
-            frame.setVisible(true);
             try {
+                logger.info("Abriendo ventana Servicios");
+                Servicio frame = new Servicio();
+                desktopPane.add(frame);
+                frame.setVisible(true);
                 frame.setSelected(true);
-            } catch (java.beans.PropertyVetoException ex) {}
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Servicios", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Servicios");
+            }
         });
 
         // Menú Reserva
         contentMenuItem.addActionListener(e -> {
-            JInternalFrame frame = new Alojamiento();
-            frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-            desktopPane.add(frame);
-            frame.setVisible(true);
             try {
+                logger.info("Abriendo ventana Alojamiento");
+                JInternalFrame frame = new Alojamiento();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                desktopPane.add(frame);
+                frame.setVisible(true);
                 frame.setSelected(true);
-            } catch (java.beans.PropertyVetoException ex) {}
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Alojamiento", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Alojamiento");
+            }
         });
 
         aboutMenuItem.addActionListener(e -> {
-            // TODO: Implementar ventana Clientes
-            JOptionPane.showMessageDialog(this, "Módulo de Clientes en desarrollo");
+            try {
+                logger.info("Abriendo ventana Clientes");
+                Cliente frame = new Cliente();
+                desktopPane.add(frame);
+                frame.setVisible(true);
+                frame.setSelected(true);
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Clientes", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Clientes");
+            }
         });
 
         jMenuItem1.addActionListener(e -> {
@@ -160,11 +181,13 @@ public class INICIO extends javax.swing.JFrame {
         // Menú Salir
         jMenu3.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
+                logger.info("Usuario solicitando cierre de aplicación");
                 int option = JOptionPane.showConfirmDialog(null, 
                     "¿Desea salir del sistema?",
                     "Confirmar salida",
                     JOptionPane.YES_NO_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
+                    logger.info("Cerrando aplicación");
                     System.exit(0);
                 }
             }

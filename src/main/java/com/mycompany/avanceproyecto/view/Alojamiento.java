@@ -5,29 +5,124 @@
 package com.mycompany.avanceproyecto.view;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
 import java.awt.*;
 import java.awt.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.util.List;
+
+import com.mycompany.avanceproyecto.controller.AlojamientoController;
+import com.mycompany.avanceproyecto.model.Alojamientos;
+import com.mycompany.avanceproyecto.model.Clientes;
+import com.mycompany.avanceproyecto.model.Habitaciones;
+import com.toedter.calendar.JDateChooser;
 
 /**
  *
  * @author Pablo Tello
  */
 public class Alojamiento extends JInternalFrame {
+    
+    // Agregar getters para el controlador
+    public JTextField getTxtIdAlojamiento() { return txtIdalojamiento; }
+    public JTextField getTxtIdHabitacion() { return txtidhabitacion; }
+    public JTextField getTxtHabitacion() { return txthabitacion; }
+    public JTextField getTxtIdCliente() { return txtidcliente; }
+    public JTextField getTxtCliente() { return txtxliente; }
+    public JTextField getTxtCosto() { return txtcosto; }
+    public JDateChooser getFechaEntrada() { return dcfechaingreso; }
+    public JDateChooser getFechaSalida() { return dcfechasalida; }
+    public JTable getTablaAlojamientos() { return tablalistadoalojamiento; }
+    public JButton getBtnBuscarHabitacion() { return btnbuscahabitacion; }
+    public JButton getBtnBuscarCliente() { return btnbuscacliente; }
+    public JButton getBtnNuevo() { return btnNuevo; }
+    public JButton getBtnGuardar() { return btnguardar; }
+    public JButton getBtnEliminar() { return btneliminar; }
+    public JButton getBtnBuscar() { return btsbuscar; }
+
+    // Método para actualizar el contador de registros
+    public void actualizarTotalRegistros(int total) {
+        lbltotalregistro.setText("Total: " + total);
+    }
+
+    // Método para limpiar el formulario
+    public void limpiarFormulario() {
+        txtIdalojamiento.setText("");
+        txtidhabitacion.setText("");
+        txthabitacion.setText("");
+        txtidcliente.setText("");
+        txtxliente.setText("");
+        txtcosto.setText("");
+        dcfechaingreso.setDate(null);
+        dcfechasalida.setDate(null);
+        tablalistadoalojamiento.clearSelection();
+    }
+
+    // Métodos para obtener el cliente y habitación seleccionados
+    public Clientes getClienteSeleccionado() {
+        try {
+            int idCliente = Integer.parseInt(txtidcliente.getText());
+            String nombreCliente = txtxliente.getText();
+            return new Clientes(idCliente, 0, nombreCliente, 0, "");
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Habitaciones getHabitacionSeleccionada() {
+        try {
+            int idHabitacion = Integer.parseInt(txtidhabitacion.getText());
+            String numeroHabitacion = txthabitacion.getText();
+            return new Habitaciones(idHabitacion, numeroHabitacion, "", true, 0.0);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    // Método para actualizar la tabla
+    public void actualizarTabla(List<Alojamientos> alojamientos) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadoalojamiento.getModel();
+        modelo.setRowCount(0);
+        
+        for (Alojamientos a : alojamientos) {
+            modelo.addRow(new Object[]{
+                a.getId(),
+                a.getCliente().getNombre(),
+                a.getHabitacion().getNumero(),
+                a.getFechaEntrada(),
+                a.getFechaSalida()
+            });
+        }
+        
+        actualizarTotalRegistros(alojamientos.size());
+    }
 
     /**
      * Creates new form Alojamiento
      */
     public Alojamiento() {
         initComponents();
-        setupButtons(); // Llamar después de initComponents
+        setupFrame();
+
+        new AlojamientoController(this); // El controlador se inicializa después de configurar la vista
+    }
+
+    private void setupFrame() {
+        setTitle("Gestión de Alojamientos");
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-        setTitle("Gestión de Alojamientos");
-        setSize(800, 600);
+        setSize(1000, 600);
+        setVisible(true);  // Asegurarse que la ventana sea visible
+        
+        // Configurar la tabla
+        String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
+        tablalistadoalojamiento.setModel(modelo);
+        tablalistadoalojamiento.getTableHeader().setReorderingAllowed(false);
     }
 
     private void setupButtons() {

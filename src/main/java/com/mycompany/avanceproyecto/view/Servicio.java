@@ -6,24 +6,29 @@ package com.mycompany.avanceproyecto.view;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import com.mycompany.avanceproyecto.model.Servicios;
+import com.mycompany.avanceproyecto.controller.ServicioController;
 
 /**
  *
  * @author Pablo Tello
  */
 public class Servicio extends JInternalFrame {
-
+    
     /**
      * Creates new form Servicio
      */
     public Servicio() {
         initComponents();
         setupFrame();
+        setupForm();
+        new ServicioController(this);  // Inicializar el controlador
     }
 
     private void setupFrame() {
         // Configurar ventana interna
-        setTitle("Gestión de Servicios");
         setClosable(true);
         setIconifiable(true);
         setMaximizable(true);
@@ -35,6 +40,127 @@ public class Servicio extends JInternalFrame {
 
         // Configurar botón salir para que solo cierre esta ventana
         btnsalir.addActionListener(e -> dispose());
+    }
+
+    // Agregar estos getters para el controlador
+    public JButton getBtnNuevo() {
+        return btnNuevo;
+    }
+
+    public JButton getBtnGuardar() {
+        return btnguardar;
+    }
+
+    public JButton getBtnEliminar() {
+        return btneliminar;
+    }
+
+    public JButton getBtnBuscar() {
+        return btsbuscar;
+    }
+
+    public JTextField getTxtIdServicio() {
+        return txtidServicio;
+    }
+
+    public JTextField getTxtNombre() {
+        return txtNOMBRE;
+    }
+
+    public JTextField getTxtPrecio() {
+        return txtprecio;
+    }
+
+    public JTable getTablaServicios() {
+        return tablalistadoservicio;
+    }
+
+    public void limpiarCampos() {
+        txtidServicio.setText("");
+        txtNOMBRE.setText("");
+        txtprecio.setText("");
+        tablalistadoservicio.clearSelection();
+    }
+
+    public void actualizarTabla(List<Servicios> servicios) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadoservicio.getModel();
+        modelo.setRowCount(0);
+        
+        for (Servicios s : servicios) {
+            modelo.addRow(new Object[]{
+                s.getId(),
+                s.getNombre(),
+                s.getPrecio()
+            });
+        }
+        
+        lbltotalregistro.setText("Total: " + servicios.size());
+    }
+
+    private void setupForm() {
+        setTitle("Gestión de Servicios");
+        
+        // Configurar colores de botones
+        Color btnBackground = new Color(64, 123, 255);
+        Color btnForeground = Color.WHITE;
+        
+        btnNuevo.setBackground(btnBackground);
+        btnguardar.setBackground(btnBackground);
+        btncancelar.setBackground(btnBackground);
+        btneliminar.setBackground(btnBackground);
+        btnsalir.setBackground(btnBackground);
+        btsbuscar.setBackground(btnBackground);
+        
+        btnNuevo.setForeground(btnForeground);
+        btnguardar.setForeground(btnForeground);
+        btncancelar.setForeground(btnForeground);
+        btneliminar.setForeground(btnForeground);
+        btnsalir.setForeground(btnForeground);
+        btsbuscar.setForeground(btnForeground);
+
+        // Configurar tamaños uniformes para botones
+        Dimension buttonSize = new Dimension(100, 30);
+        btnNuevo.setPreferredSize(buttonSize);
+        btnguardar.setPreferredSize(buttonSize);
+        btncancelar.setPreferredSize(buttonSize);
+        btneliminar.setPreferredSize(buttonSize);
+        btnsalir.setPreferredSize(buttonSize);
+        btsbuscar.setPreferredSize(buttonSize);
+
+        // Configurar tabla
+        String[] columnas = {"ID", "Nombre", "Precio"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablalistadoservicio.setModel(modelo);
+        tablalistadoservicio.getTableHeader().setReorderingAllowed(false);
+        
+        // Configurar anchos de columnas
+        tablalistadoservicio.getColumnModel().getColumn(0).setPreferredWidth(50);   // ID
+        tablalistadoservicio.getColumnModel().getColumn(1).setPreferredWidth(250);  // Nombre
+        tablalistadoservicio.getColumnModel().getColumn(2).setPreferredWidth(100);  // Precio
+        
+        // Selección única
+        tablalistadoservicio.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        
+        // Listener para selección en tabla
+        tablalistadoservicio.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadoservicio.getSelectedRow();
+                if (row != -1) {
+                    mostrarDatosSeleccionados(row);
+                }
+            }
+        });
+    }
+    
+    private void mostrarDatosSeleccionados(int row) {
+        txtidServicio.setText(tablalistadoservicio.getValueAt(row, 0).toString());
+        txtNOMBRE.setText(tablalistadoservicio.getValueAt(row, 1).toString());
+        txtprecio.setText(tablalistadoservicio.getValueAt(row, 2).toString());
     }
 
     /**

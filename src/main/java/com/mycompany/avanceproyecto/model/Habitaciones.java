@@ -2,17 +2,19 @@ package com.mycompany.avanceproyecto.model;
 
 
 public class Habitaciones {
-    private int id;
-    private int numero;
+    private Integer id;
+    private String numero;
     private String tipo;
-    private boolean disponible;
-    private double precio;
+    private Double precio;
+    private Boolean disponible;
 
+    // Constructor por defecto
     public Habitaciones() {
+        this.disponible = true; // Por defecto disponible
     }
 
-    
-    public Habitaciones(int id, int numero, String tipo, boolean disponible, double precio) {
+    // Constructor con parámetros
+    public Habitaciones(Integer id, String numero, String tipo, Boolean disponible, Double precio) {
         this.id = id;
         this.numero = numero;
         this.tipo = tipo;
@@ -20,47 +22,19 @@ public class Habitaciones {
         this.precio = precio;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getNumero() {
-        return numero;
-    }
-
-    public void setNumero(int numero) {
-        this.numero = numero;
-    }
-
-    public String getTipo() {
-        return tipo;
-    }
-
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
-    }
-
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public void setDisponible(boolean disponible) {
-        this.disponible = disponible;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public void setPrecio(double precio) {
-        this.precio = precio;
-    }
-
+    // Getters y setters
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
     
+    public String getNumero() { return numero; }
+    public void setNumero(String numero) { this.numero = numero; }
     
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
     
+    public Double getPrecio() { return precio; }
+    public void setPrecio(Double precio) { this.precio = precio; }
+    
+    public Boolean isDisponible() { return disponible; }
+    public void setDisponible(Boolean disponible) { this.disponible = disponible; }
 }
