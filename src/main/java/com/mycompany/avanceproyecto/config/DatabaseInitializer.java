@@ -9,14 +9,55 @@ public class DatabaseInitializer {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitializer.class);
 
     public static void initializeDatabase() {
+        logger.info("Iniciando inicialización de base de datos...");
+        
+        // Verificar que SQLite está disponible
+        if (!DatabaseConfig.testConnection()) {
+            throw new RuntimeException("No se puede establecer conexión con SQLite");
+        }
+        
         try (Connection conn = DatabaseConfig.getConnection()) {
+            logger.info("Conexión establecida, creando tablas...");
+            
             // Crear todas las tablas necesarias
             createTables(conn);
+            logger.info("Tablas creadas correctamente");
+            
             // Insertar datos iniciales
             insertInitialData(conn);
+            logger.info("Datos iniciales insertados correctamente");
+            
+            // Verificar que los datos se insertaron
+            verifyData(conn);
+            
             logger.info("Base de datos inicializada correctamente");
         } catch (Exception e) {
             logger.error("Error inicializando la base de datos", e);
+            throw new RuntimeException("Error inicializando base de datos: " + e.getMessage(), e);
+        }
+    }
+    
+    private static void verifyData(Connection conn) throws Exception {
+        try (java.sql.Statement stmt = conn.createStatement()) {
+            // Verificar usuarios
+            try (java.sql.ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM usuarios")) {
+                if (rs.next()) {
+                    int count = rs.getInt(1);
+                    logger.info("Usuarios en BD: {}", count);
+                    if (count == 0) {
+                        throw new RuntimeException("No se insertaron usuarios");
+                    }
+                }
+            }
+            
+            // Verificar admin específicamente
+            try (java.sql.ResultSet rs = stmt.executeQuery("SELECT * FROM usuarios WHERE nombre_usuario = 'admin'")) {
+                if (rs.next()) {
+                    logger.info("Usuario admin verificado: {}", rs.getString("nombre_usuario"));
+                } else {
+                    throw new RuntimeException("Usuario admin no encontrado después de la inserción");
+                }
+            }
         }
     }
 
