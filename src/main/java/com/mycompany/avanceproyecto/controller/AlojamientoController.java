@@ -7,7 +7,7 @@ import com.mycompany.avanceproyecto.view.Alojamiento;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import java.util.List;
-import java.time.LocalDate;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import javax.swing.JTable;
@@ -166,7 +166,7 @@ public class AlojamientoController {
 
     private void buscarAlojamientos() {
         // Implementar búsqueda según los criterios necesarios
-        // Por ejemplo, por cliente, habitación o fechas
+        
     }
 
     private void mostrarSelectorClientes() {
