@@ -8,19 +8,20 @@ import org.slf4j.LoggerFactory;
 
 public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
-    // La base de datos se creará en la raíz del proyecto
-    private static final String URL = "jdbc:sqlite:hotel.db";
+    // Agregar parámetros para evitar el lock de la base de datos
+    private static final String URL = "jdbc:sqlite:hotel.db?journal_mode=WAL&busy_timeout=30000";
     
     public static Connection getConnection() {
         try {
+            // Remover la inicialización automática para evitar conflictos
             Connection conn = DriverManager.getConnection(URL);
-            initDatabase(conn);
             return conn;
         } catch (Exception e) {
             logger.error("Error conectando a la base de datos", e);
             throw new RuntimeException("Error de conexión a la base de datos", e);
         }
     }
+
     
     private static void initDatabase(Connection conn) {
         // Crear tabla si no existe

@@ -50,6 +50,7 @@ public class INICIO extends javax.swing.JFrame {
         copyMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         contentMenuItem = new javax.swing.JMenuItem();
+        alojamientoMenuItem = new javax.swing.JMenuItem(); // Nuevo item para alojamiento
         aboutMenuItem = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
@@ -80,8 +81,12 @@ public class INICIO extends javax.swing.JFrame {
         helpMenu.setText("RESERVA");
 
         contentMenuItem.setMnemonic('c');
-        contentMenuItem.setText("RESERVAS Y CONSUMO");
+        contentMenuItem.setText("CONSUMO DE SERVICIOS"); // Cambiar nombre
         helpMenu.add(contentMenuItem);
+
+        alojamientoMenuItem.setMnemonic('l');
+        alojamientoMenuItem.setText("ALOJAMIENTOS"); // Nuevo item
+        helpMenu.add(alojamientoMenuItem);
 
         aboutMenuItem.setMnemonic('a');
         aboutMenuItem.setText("CLIENTES");
@@ -115,44 +120,50 @@ public class INICIO extends javax.swing.JFrame {
         // Configurar eventos del menú
         // Menú Archivo
         cutMenuItem.addActionListener(e -> {
+            JInternalFrame frame = new Habitacion();
+            frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+            desktopPane.add(frame);
+            frame.setVisible(true);
             try {
-                logger.info("Abriendo ventana Habitaciones");
-                JInternalFrame frame = new Habitacion();
-                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
-                desktopPane.add(frame);
-                frame.setVisible(true);
                 frame.setSelected(true);
-            } catch (Exception ex) {
-                logger.error("Error al abrir ventana Habitaciones", ex);
-                JOptionPane.showMessageDialog(this, "Error al abrir ventana Habitaciones");
-            }
+            } catch (java.beans.PropertyVetoException ex) {}
         });
 
         copyMenuItem.addActionListener(e -> {
+            Servicio frame = new Servicio();
+            desktopPane.add(frame);
+            frame.setVisible(true);
             try {
-                logger.info("Abriendo ventana Servicios");
-                Servicio frame = new Servicio();
-                desktopPane.add(frame);
-                frame.setVisible(true);
                 frame.setSelected(true);
-            } catch (Exception ex) {
-                logger.error("Error al abrir ventana Servicios", ex);
-                JOptionPane.showMessageDialog(this, "Error al abrir ventana Servicios");
-            }
+            } catch (java.beans.PropertyVetoException ex) {}
         });
 
         // Menú Reserva
         contentMenuItem.addActionListener(e -> {
             try {
-                logger.info("Abriendo ventana Alojamiento");
-                JInternalFrame frame = new Alojamiento();
+                logger.info("Abriendo ventana Consumo de Servicios");
+                ConsumoServicio frame = new ConsumoServicio();
                 frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
                 desktopPane.add(frame);
                 frame.setVisible(true);
                 frame.setSelected(true);
             } catch (Exception ex) {
-                logger.error("Error al abrir ventana Alojamiento", ex);
-                JOptionPane.showMessageDialog(this, "Error al abrir ventana Alojamiento");
+                logger.error("Error al abrir ventana Consumo de Servicios", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Consumo de Servicios: " + ex.getMessage());
+            }
+        });
+
+        alojamientoMenuItem.addActionListener(e -> {
+            try {
+                logger.info("Abriendo ventana Alojamientos");
+                Alojamiento frame = new Alojamiento();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                desktopPane.add(frame);
+                frame.setVisible(true);
+                frame.setSelected(true);
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Alojamientos", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Alojamientos: " + ex.getMessage());
             }
         });
 
@@ -160,17 +171,28 @@ public class INICIO extends javax.swing.JFrame {
             try {
                 logger.info("Abriendo ventana Clientes");
                 Cliente frame = new Cliente();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
                 desktopPane.add(frame);
                 frame.setVisible(true);
                 frame.setSelected(true);
             } catch (Exception ex) {
                 logger.error("Error al abrir ventana Clientes", ex);
-                JOptionPane.showMessageDialog(this, "Error al abrir ventana Clientes");
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Clientes: " + ex.getMessage());
             }
         });
 
         jMenuItem1.addActionListener(e -> {
-            new Factura().setVisible(true); // Abre ventana Pagos
+            try {
+                logger.info("Abriendo ventana Facturas");
+                Factura frame = new Factura();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                desktopPane.add(frame);
+                frame.setVisible(true);
+                frame.setSelected(true);
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Facturas", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Facturas: " + ex.getMessage());
+            }
         });
 
         // Menú Configuraciones
@@ -181,13 +203,11 @@ public class INICIO extends javax.swing.JFrame {
         // Menú Salir
         jMenu3.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                logger.info("Usuario solicitando cierre de aplicación");
                 int option = JOptionPane.showConfirmDialog(null, 
                     "¿Desea salir del sistema?",
                     "Confirmar salida",
                     JOptionPane.YES_NO_OPTION);
                 if (option == JOptionPane.YES_OPTION) {
-                    logger.info("Cerrando aplicación");
                     System.exit(0);
                 }
             }
@@ -238,6 +258,7 @@ public class INICIO extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem contentMenuItem;
+    private javax.swing.JMenuItem alojamientoMenuItem; // Agregar nueva variable
     private javax.swing.JMenuItem copyMenuItem;
     private javax.swing.JMenuItem cutMenuItem;
     private javax.swing.JDesktopPane desktopPane;

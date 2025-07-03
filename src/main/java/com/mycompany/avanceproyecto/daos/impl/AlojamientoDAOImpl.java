@@ -39,28 +39,6 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
         }
     }
 
-    @Override
-    public Alojamientos obtenerPorId(int id) throws Exception {
-        String sql = """
-            SELECT a.*, c.*, h.* 
-            FROM alojamientos a
-            JOIN clientes c ON a.cliente_id = c.id
-            JOIN habitaciones h ON a.habitacion_id = h.id
-            WHERE a.id = ?
-        """;
-        
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return construirAlojamiento(rs);
-                }
-            }
-        }
-        return null;
-    }
-
     private Alojamientos construirAlojamiento(ResultSet rs) throws SQLException {
         Clientes cliente = new Clientes(
             rs.getInt("cliente_id"),
@@ -78,12 +56,69 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
             rs.getDouble("precio")
         );
         
+        // Cambiar para usar getString en lugar de getDate
+        LocalDate fechaEntrada = LocalDate.parse(rs.getString("fecha_entrada"));
+        LocalDate fechaSalida = LocalDate.parse(rs.getString("fecha_salida"));
+        
         return new Alojamientos(
             rs.getInt("id"),
             cliente,
             habitacion,
-            rs.getDate("fecha_entrada").toLocalDate(),
-            rs.getDate("fecha_salida").toLocalDate()
+            fechaEntrada,
+            fechaSalida
+        );
+    }
+
+    @Override
+    public Alojamientos obtenerPorId(int id) throws Exception {
+        String sql = """
+            SELECT a.id, a.fecha_entrada, a.fecha_salida,
+                   c.id as cliente_id, c.nombre, c.dni, c.telefono, c.correo,
+                   h.id as habitacion_id, h.numero, h.tipo, h.disponible, h.precio
+            FROM alojamientos a
+            JOIN clientes c ON a.cliente_id = c.id
+            JOIN habitaciones h ON a.habitacion_id = h.id
+            WHERE a.id = ?
+        """;
+        
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return construirAlojamientoFromJoin(rs);
+                }
+            }
+        }
+        return null;
+    }
+
+    private Alojamientos construirAlojamientoFromJoin(ResultSet rs) throws SQLException {
+        Clientes cliente = new Clientes(
+            rs.getInt("cliente_id"),
+            rs.getInt("dni"),
+            rs.getString("nombre"),
+            rs.getInt("telefono"),
+            rs.getString("correo")
+        );
+        
+        Habitaciones habitacion = new Habitaciones(
+            rs.getInt("habitacion_id"),
+            rs.getString("numero"),
+            rs.getString("tipo"),
+            rs.getBoolean("disponible"),
+            rs.getDouble("precio")
+        );
+        
+        LocalDate fechaEntrada = LocalDate.parse(rs.getString("fecha_entrada"));
+        LocalDate fechaSalida = LocalDate.parse(rs.getString("fecha_salida"));
+        
+        return new Alojamientos(
+            rs.getInt("id"),
+            cliente,
+            habitacion,
+            fechaEntrada,
+            fechaSalida
         );
     }
 

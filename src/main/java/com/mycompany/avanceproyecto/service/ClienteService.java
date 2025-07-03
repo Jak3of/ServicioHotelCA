@@ -26,16 +26,22 @@ public class ClienteService {
     }
     
     public List<Clientes> listarClientes() throws Exception {
+        logger.info("Listando todos los clientes");
         return clienteDAO.listar();
     }
     
     public void eliminarCliente(int id) throws Exception {
-        logger.info("Solicitando eliminación de cliente ID: {}", id);
+        logger.info("Eliminando cliente ID: {}", id);
         clienteDAO.eliminar(id);
     }
     
     public Clientes buscarPorDni(int dni) throws Exception {
         logger.info("Buscando cliente por DNI: {}", dni);
         return clienteDAO.obtenerPorDni(dni);
+    }
+    
+    public Clientes obtenerCliente(int id) throws Exception {
+        logger.info("Obteniendo cliente ID: {}", id);
+        return clienteDAO.obtenerPorId(id);
     }
 }

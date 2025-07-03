@@ -4,17 +4,122 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import com.mycompany.avanceproyecto.controller.ConsumoServicioController;
+import com.mycompany.avanceproyecto.model.Alojamientos;
+import com.mycompany.avanceproyecto.model.Servicios;
+import javax.swing.JButton;
+import javax.swing.JInternalFrame;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.Color;
+
 /**
  *
  * @author Pablo Tello
  */
-public class ConsumoServicio extends javax.swing.JFrame {
+public class ConsumoServicio extends JInternalFrame {
 
     /**
      * Creates new form ConsumoServicio
      */
     public ConsumoServicio() {
         initComponents();
+        setupFrame();
+        setupForm();
+        new ConsumoServicioController(this);
+    }
+
+    private void setupFrame() {
+        setTitle("Gestión de Consumo de Servicios");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setSize(1200, 700);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setVisible(true);
+    }
+
+    private void setupForm() {
+        // Configurar la tabla
+        String[] columnas = {"ID", "Alojamiento", "Cliente", "Servicio", "Cantidad", "Precio Unit.", "Total"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
+        tablalistadoconsumo.setModel(modelo);
+        tablalistadoconsumo.getTableHeader().setReorderingAllowed(false);
+        
+        // Hacer el precio no editable
+        txtprecio.setEditable(false);
+        txtprecio.setBackground(new Color(240, 240, 240));
+        
+        // Listener para la tabla
+        tablalistadoconsumo.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadoconsumo.getSelectedRow();
+                if (row != -1) {
+                    mostrarDatosSeleccionados(row);
+                }
+            }
+        });
+    }
+
+    private void mostrarDatosSeleccionados(int row) {
+        txtIdalojamiento.setText(tablalistadoconsumo.getValueAt(row, 0).toString());
+        // Aquí puedes agregar más lógica para mostrar los datos seleccionados
+    }
+
+    public void limpiarFormulario() {
+        txtIdalojamiento.setText("");
+        txtidalojamiento.setText("");
+        txtalojamiento.setText("");
+        txtidservicio.setText("");
+        txtservicio.setText("");
+        txtcantidad.setText("");
+        txtprecio.setText("");
+        tablalistadoconsumo.clearSelection();
+    }
+
+    public void actualizarTotalRegistros(int total) {
+        lbltotalregistro.setText("Total: " + total);
+    }
+
+    // Getters para el controlador
+    public JTextField getTxtIdAlojamiento() { return txtidalojamiento; }
+    public JTextField getTxtAlojamiento() { return txtalojamiento; }
+    public JTextField getTxtIdServicio() { return txtidservicio; }
+    public JTextField getTxtServicio() { return txtservicio; }
+    public JTextField getTxtCantidad() { return txtcantidad; }
+    public JTextField getTxtPrecio() { return txtprecio; }
+    public JTable getTablaConsumo() { return tablalistadoconsumo; }
+    public JButton getBtnNuevo() { return btnNuevo; }
+    public JButton getBtnGuardar() { return btnguardar; }
+    public JButton getBtnEliminar() { return btneliminar; }
+    public JButton getBtnBuscarAlojamiento() { return btnbuscahabitacion; }
+    public JButton getBtnBuscarServicio() { return btnbuscacliente; }
+
+    // Métodos para obtener objetos seleccionados
+    public Alojamientos getAlojamientoSeleccionado() {
+        try {
+            int idAlojamiento = Integer.parseInt(txtidalojamiento.getText());
+            // Aquí necesitarías obtener el alojamiento completo del servicio
+            // Por simplicidad, retornamos null por ahora
+            return null;
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Servicios getServicioSeleccionado() {
+        try {
+            int idServicio = Integer.parseInt(txtidservicio.getText());
+            String nombreServicio = txtservicio.getText();
+            double precio = Double.parseDouble(txtprecio.getText());
+            return new Servicios(idServicio, nombreServicio, precio);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

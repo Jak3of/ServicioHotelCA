@@ -1,5 +1,3 @@
-
-
 package com.mycompany.avanceproyecto.model;
 
 import java.time.LocalDate;
@@ -26,6 +24,18 @@ public class Facturas {
         this.total = total;
         this.servicios = servicios;
     }
+
+    // Agregar constructor sin servicios
+    public Facturas(int id, LocalDate fecha, Clientes cliente, Alojamientos alojamiento, double total) {
+        this.id = id;
+        this.fecha = fecha;
+        this.cliente = cliente;
+        this.alojamiento = alojamiento;
+        this.total = total;
+        this.servicios = null; // Inicializar como null o lista vacía
+    }
+
+    
 
   
 

@@ -1,21 +1,272 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package com.mycompany.avanceproyecto.view;
+
+import javax.swing.*;
+import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import com.mycompany.avanceproyecto.model.Facturas;
+import com.mycompany.avanceproyecto.model.Alojamientos;
+import com.mycompany.avanceproyecto.controller.FacturaController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Pablo Tello
  */
-public class Factura extends javax.swing.JFrame {
+public class Factura extends JInternalFrame {
+    private static final Logger logger = LoggerFactory.getLogger(Factura.class);
+    private FacturaController controller;
 
     /**
      * Creates new form Factura
      */
     public Factura() {
         initComponents();
+        setupFrame();
+        setupForm();
+        this.controller = new FacturaController(this);
     }
+
+    private void setupFrame() {
+        setTitle("Gestión de Facturas");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setSize(1400, 800);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setVisible(true);
+    }
+
+    private void setupForm() {
+        // Configurar tabla de alojamientos del cliente (reemplaza tabla de pagos)
+        String[] columnasAloj = {"ID", "Habitación", "Fecha Entrada", "Fecha Salida", "Precio Hab."};
+        DefaultTableModel modeloAloj = new DefaultTableModel(columnasAloj, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablalistadopago.setModel(modeloAloj);
+        tablalistadopago.getTableHeader().setReorderingAllowed(false);
+
+        // Configurar tabla de consumos
+        String[] columnasConsumo = {"Servicio", "Cantidad", "Precio Unit.", "Total"};
+        DefaultTableModel modeloConsumo = new DefaultTableModel(columnasConsumo, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablalistadoconsumo.setModel(modeloConsumo);
+        tablalistadoconsumo.getTableHeader().setReorderingAllowed(false);
+
+        // Cambiar títulos de paneles
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("ALOJAMIENTOS DEL CLIENTE"));
+        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("CONSUMOS DEL ALOJAMIENTO"));
+
+        // Configurar botones
+        Color btnBackground = new Color(64, 123, 255);
+        Color btnForeground = Color.WHITE;
+        
+        btnNuevo.setBackground(btnBackground);
+        btnguardar.setBackground(btnBackground);
+        btncancelar.setBackground(btnBackground);
+        btneliminar.setBackground(btnBackground);
+        btnsalir.setBackground(btnBackground);
+        btsbuscar.setBackground(btnBackground);
+        
+        btnNuevo.setForeground(btnForeground);
+        btnguardar.setForeground(btnForeground);
+        btncancelar.setForeground(btnForeground);
+        btneliminar.setForeground(btnForeground);
+        btnsalir.setForeground(btnForeground);
+        btsbuscar.setForeground(btnForeground);
+
+        // Reconfigurar el botón de búsqueda como "Buscar Cliente"
+        btsbuscar.setText("BUSCAR CLIENTE");
+        btsbuscar.setPreferredSize(new java.awt.Dimension(140, 25));
+        
+        // Agregar botón para imprimir (provisional)
+        JButton btnImprimir = new JButton("IMPRIMIR");
+        btnImprimir.setBackground(new Color(34, 139, 34));
+        btnImprimir.setForeground(btnForeground);
+        btnImprimir.setPreferredSize(new java.awt.Dimension(100, 25));
+        btnImprimir.addActionListener(e -> imprimirFactura());
+        
+        // Configurar campos como no editables
+        txttotalpago.setEditable(false);
+        txttotalpago.setBackground(new Color(240, 240, 240));
+        txtprecio.setEditable(false);
+        txtprecio.setBackground(new Color(240, 240, 240));
+        txthabitacion.setEditable(false);
+        txthabitacion.setBackground(new Color(240, 240, 240));
+
+        // Configurar eventos
+        btnsalir.addActionListener(e -> dispose());
+        
+        // Listener para tabla de alojamientos - CLIC ÚNICO
+        tablalistadopago.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadopago.getSelectedRow();
+                if (row != -1) {
+                    cargarConsumosAlojamiento(row);
+                }
+            }
+        });
+
+        // Mejorar labels
+        jLabel2.setText("CLIENTE SELECCIONADO:");
+        jLabel7.setText("HABITACIÓN:");
+        jLabel12.setText("TOTAL A PAGAR:");
+        
+        // Configurar fecha actual por defecto
+        dcfechaemision.setDate(new java.util.Date());
+    }
+
+    private void imprimirFactura() {
+        int filaAlojamiento = tablalistadopago.getSelectedRow();
+        if (filaAlojamiento == -1) {
+            JOptionPane.showMessageDialog(this, 
+                "Por favor, seleccione un alojamiento para imprimir la factura",
+                "Seleccionar Alojamiento", 
+                JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        // Por ahora solo mostrar mensaje
+        String cliente = txtreserva.getText();
+        String habitacion = txthabitacion.getText();
+        String total = txttotalpago.getText();
+        
+        String mensaje = String.format(
+            "FACTURA PROVISIONAL\n\n" +
+            "Cliente: %s\n" +
+            "Habitación: %s\n" +
+            "Total: S/ %s\n\n" +
+            "Función de impresión será implementada próximamente",
+            cliente, habitacion, total
+        );
+        
+        JOptionPane.showMessageDialog(this, mensaje, 
+                                     "Vista Previa - Factura", 
+                                     JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private void buscarCliente() {
+        // Implementar búsqueda de cliente
+    }
+
+    private void cargarConsumosAlojamiento(int filaAlojamiento) {
+        try {
+            int idAlojamiento = (Integer) tablalistadopago.getValueAt(filaAlojamiento, 0);
+            // Delegar al controlador
+            controller.cargarConsumosAlojamiento(filaAlojamiento);
+        } catch (Exception e) {
+            logger.error("Error al cargar consumos del alojamiento", e);
+            JOptionPane.showMessageDialog(this, "Error al cargar consumos: " + e.getMessage());
+        }
+    }
+
+    public void limpiarFormulario() {
+        txtidServicio.setText("");
+        txtidreserva.setText("");
+        txtreserva.setText("");
+        txthabitacion.setText("");
+        txtprecio.setText("");
+        txttotalpago.setText("");
+        dcfechaemision.setDate(new java.util.Date()); // Restablecer fecha actual
+        cbotipocomprobante.setSelectedIndex(0);
+        tablalistadopago.clearSelection();
+        ((DefaultTableModel) tablalistadoconsumo.getModel()).setRowCount(0);
+        ((DefaultTableModel) tablalistadopago.getModel()).setRowCount(0);
+    }
+
+    public void actualizarTablaAlojamientos(List<Alojamientos> alojamientos) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadopago.getModel();
+        modelo.setRowCount(0);
+        
+        for (Alojamientos a : alojamientos) {
+            modelo.addRow(new Object[]{
+                a.getId(),
+                a.getHabitacion().getNumero(),
+                a.getFechaEntrada(),
+                a.getFechaSalida(),
+                a.getHabitacion().getPrecio()
+            });
+        }
+        
+        lbltotalregistro.setText("Alojamientos: " + alojamientos.size());
+    }
+
+    public void actualizarTablaConsumos(List<com.mycompany.avanceproyecto.model.ConsumoServicio> consumos) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadoconsumo.getModel();
+        modelo.setRowCount(0);
+        
+        double totalConsumos = 0.0;
+        for (com.mycompany.avanceproyecto.model.ConsumoServicio c : consumos) {
+            double totalItem = c.getCantidad() * c.getServicio().getPrecio();
+            totalConsumos += totalItem;
+            
+            modelo.addRow(new Object[]{
+                c.getServicio().getNombre(),
+                c.getCantidad(),
+                c.getServicio().getPrecio(),
+                totalItem
+            });
+        }
+        
+        // Actualizar totales
+        int filaSeleccionada = tablalistadopago.getSelectedRow();
+        if (filaSeleccionada != -1) {
+            double precioHabitacion = (Double) tablalistadopago.getValueAt(filaSeleccionada, 4);
+            double total = precioHabitacion + totalConsumos;
+            
+            txtprecio.setText(String.valueOf(precioHabitacion));
+            txttotalpago.setText(String.valueOf(total));
+        }
+        
+        lbltotalregistro1.setText("Consumos: " + consumos.size());
+    }
+
+    public void actualizarTablaFacturas(List<Facturas> facturas) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadopago.getModel();
+        modelo.setRowCount(0);
+        
+        for (Facturas f : facturas) {
+            modelo.addRow(new Object[]{
+                f.getId(),
+                f.getFecha(),
+                f.getCliente().getNombre(),
+                "Aloj. " + f.getAlojamiento().getId(),
+                f.getTotal()
+            });
+        }
+        
+        lbltotalregistro.setText("Total: " + facturas.size());
+    }
+
+    // Getters para el controlador
+    public JTextField getTxtIdFactura() { return txtidServicio; }
+    public JTextField getTxtIdAlojamiento() { return txtidreserva; }
+    public JTextField getTxtCliente() { return txtreserva; }
+    public JTextField getTxtHabitacion() { return txthabitacion; }
+    public JTextField getTxtSubtotal() { return txtprecio; }
+    public JTextField getTxtTotal() { return txttotalpago; }
+    public JComboBox<String> getCboTipoComprobante() { return cbotipocomprobante; }
+    public com.toedter.calendar.JDateChooser getFechaEmision() { return dcfechaemision; }
+    public JTable getTablaFacturas() { return tablalistadopago; }
+    public JTable getTablaConsumos() { return tablalistadoconsumo; }
+    public JButton getBtnNuevo() { return btnNuevo; }
+    public JButton getBtnGuardar() { return btnguardar; }
+    public JButton getBtnEliminar() { return btneliminar; }
+    public JButton getBtnBuscar() { return btsbuscar; }
 
     /**
      * This method is called from within the constructor to initialize the form.

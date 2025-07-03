@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 public class UsuarioRepository {
     private static final Logger logger = LoggerFactory.getLogger(UsuarioRepository.class);
     
+    // admin 123
     public Usuarios findByUsernameAndPassword(String username, String password) {
         String sql = "SELECT * FROM usuarios WHERE nombre_usuario = ? AND contrasena = ?";
         

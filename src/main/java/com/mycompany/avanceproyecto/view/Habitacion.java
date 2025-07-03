@@ -27,8 +27,19 @@ public class Habitacion extends JInternalFrame {
     }
 
     private void setupForm() {
-        // Configuración básica de la ventana
-        setTitle("Gestión de Habitaciones"); 
+        // Configuración básica de la ventana INTERNA
+        setTitle("Gestión de Habitaciones");
+        setClosable(true);          // Permite cerrar la ventana
+        setIconifiable(true);       // Permite minimizar
+        setMaximizable(true);       // Permite maximizar
+        setResizable(true);         // Permite redimensionar
+        setSize(1000, 600);         // Tamaño de la ventana
+        
+        // Configurar comportamiento al cerrar
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        
+        // Hacer visible la ventana
+        setVisible(true);
         
         // Configurar tabla con orden fijo de columnas
         String[] columnas = {"ID", "Número", "Estado", "Precio", "Tipo"};
