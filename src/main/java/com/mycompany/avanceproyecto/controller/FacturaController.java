@@ -7,6 +7,7 @@ import com.mycompany.avanceproyecto.service.FacturaService;
 import com.mycompany.avanceproyecto.service.AlojamientoService;
 import com.mycompany.avanceproyecto.service.ClienteService;
 import com.mycompany.avanceproyecto.service.ConsumoServicioService;
+import com.mycompany.avanceproyecto.service.HabitacionService;
 
 import com.mycompany.avanceproyecto.view.Factura;
 import javax.swing.JOptionPane;
@@ -171,6 +172,7 @@ public class FacturaController {
             
             if (alojamiento != null) {
                 service.generarFactura(alojamiento);
+                new HabitacionService().actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), true);
                 JOptionPane.showMessageDialog(view, 
                     "Factura generada con éxito\nTotal: S/ " + view.getTxtTotal().getText(),
                     "Factura Generada", 

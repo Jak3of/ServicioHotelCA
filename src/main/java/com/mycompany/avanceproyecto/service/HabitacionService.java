@@ -40,5 +40,13 @@ public class HabitacionService {
         
         return habitacionDAO.listarDisponibles();
     }
+  public void actualizarHabitacionOcupada(int idHabitacion, boolean disponible) throws Exception {
+    Habitaciones h = habitacionDAO.obtenerPorId(idHabitacion);
+    if (h != null) {
+        h.setDisponible(disponible);
+        habitacionDAO.actualizar(h);
+    }
 }
+}
+
 

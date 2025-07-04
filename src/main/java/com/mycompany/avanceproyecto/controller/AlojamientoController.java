@@ -16,6 +16,7 @@ import com.mycompany.avanceproyecto.model.Clientes;
 import com.mycompany.avanceproyecto.model.Habitaciones;
 import com.mycompany.avanceproyecto.service.ClienteService;
 import com.mycompany.avanceproyecto.service.HabitacionService;
+import com.mycompany.avanceproyecto.view.SeleccionarHabitaciones;
 
 public class AlojamientoController {
     private static final Logger logger = LoggerFactory.getLogger(AlojamientoController.class);
@@ -90,7 +91,7 @@ public class AlojamientoController {
             alojamiento.setHabitacion(view.getHabitacionSeleccionada());
             
             service.guardarOActualizarAlojamiento(alojamiento);
-            
+            habitacionService.actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), false);
             JOptionPane.showMessageDialog(view, 
                 alojamiento.getId() == 0 ? "Alojamiento guardado con éxito" : 
                                          "Alojamiento actualizado con éxito");
@@ -202,39 +203,12 @@ public class AlojamientoController {
     }
 
     private void mostrarSelectorHabitaciones() {
-        try {
-            String[] columnas = {"ID", "Número", "Tipo", "Precio"};
-            DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
-            JTable tablaTemp = new JTable(modelo);
-            
-            List<Habitaciones> habitaciones = habitacionService.listarDisponibles();
-            for (Habitaciones h : habitaciones) {
-                modelo.addRow(new Object[]{
-                    h.getId(),
-                    h.getNumero(),
-                    h.getTipo(),
-                    h.getPrecio()
-                });
-            }
-            
-            JScrollPane scroll = new JScrollPane(tablaTemp);
-            int result = JOptionPane.showConfirmDialog(view, scroll, 
-                "Seleccionar Habitación", JOptionPane.OK_CANCEL_OPTION);
-                
-            if (result == JOptionPane.OK_OPTION) {
-                int fila = tablaTemp.getSelectedRow();
-                if (fila != -1) {
-                    double precio = (Double) tablaTemp.getValueAt(fila, 3);
-                    view.getTxtIdHabitacion().setText(tablaTemp.getValueAt(fila, 0).toString());
-                    view.getTxtHabitacion().setText(tablaTemp.getValueAt(fila, 1).toString());
-                    view.getTxtCosto().setText(String.valueOf(precio));  // Mostrar el precio como costo
-                    view.getTxtCosto().setEditable(false);  // El costo no debe ser editable
-                }
-            }
-        } catch (Exception e) {
-            logger.error("Error al mostrar selector de habitaciones", e);
-            JOptionPane.showMessageDialog(view, "Error al cargar habitaciones");
-        }
-    }
+  
+    SeleccionarHabitaciones selector = new SeleccionarHabitaciones(view);
+    selector.setVisible(true);
 }
+         
+        }
+    
+
 

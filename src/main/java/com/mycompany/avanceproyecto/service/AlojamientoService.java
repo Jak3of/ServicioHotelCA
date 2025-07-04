@@ -56,4 +56,7 @@ public class AlojamientoService {
         logger.info("Obteniendo alojamiento ID: {}", id);
         return alojamientoDAO.obtenerPorId(id);
     }
+    public Alojamientos obtenerPorId(int id) throws Exception {
+    return alojamientoDAO.obtenerPorId(id);
+}
 }
