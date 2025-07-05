@@ -9,6 +9,6 @@ public interface ClienteDAO {
     Clientes obtenerPorDni(int dni) throws Exception;  // Cambiado de String a int
     List<Clientes> listar() throws Exception;
     void actualizar(Clientes cliente) throws Exception;
-    void eliminar(int id) throws Exception;
+    void eliminar(int id) throws Exception;   
 }
 

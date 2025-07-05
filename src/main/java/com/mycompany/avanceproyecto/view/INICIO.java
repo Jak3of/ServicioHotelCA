@@ -35,6 +35,16 @@ public class INICIO extends javax.swing.JFrame {
         
         // Configurar permisos según el rol del usuario
         configurarPermisosPorRol();
+        try {
+        Cliente clienteFrame = new Cliente();
+        clienteFrame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        desktopPane.add(clienteFrame);
+        clienteFrame.setVisible(true);
+        clienteFrame.setSelected(true);
+     } catch (Exception ex) {
+        logger.error("Error al abrir ventana Clientes al iniciar", ex);
+        JOptionPane.showMessageDialog(this, "No se pudo abrir la ventana Clientes al iniciar: " + ex.getMessage());
+    }
     }
     
     private void configurarPermisosPorRol() {
@@ -45,7 +55,8 @@ public class INICIO extends javax.swing.JFrame {
             logger.info("Menú ARCHIVO Y CONFIGURACIONES oculto para usuario RECEPCIONISTA");
         }
     }
-
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
