@@ -1,21 +1,159 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
 package com.mycompany.avanceproyecto.view;
 
+import javax.swing.*;
+import java.awt.*;
+import javax.swing.table.DefaultTableModel;
+import java.util.List;
+import com.mycompany.avanceproyecto.model.Usuarios;
+import com.mycompany.avanceproyecto.controller.UsuarioController;
+
 /**
- *
- * @author Pablo Tello
+ * Vista para gestión de usuarios del sistema
  */
-public class Usuario extends javax.swing.JFrame {
+public class Usuario extends JInternalFrame {
 
     /**
      * Creates new form Usuario
      */
     public Usuario() {
         initComponents();
+        setupFrame();
+        setupForm();
+        new UsuarioController(this);
     }
+
+    private void setupFrame() {
+        setTitle("Gestión de Usuarios");
+        setClosable(true);
+        setIconifiable(true);
+        setMaximizable(true);
+        setResizable(true);
+        setSize(1186, 399);
+        setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+        setVisible(true);
+    }
+
+    private void setupForm() {
+        // Configurar tabla
+        String[] columnas = {"ID", "Usuario", "Rol"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        tablalistadousuario.setModel(modelo);
+        tablalistadousuario.getTableHeader().setReorderingAllowed(false);
+        
+        // Configurar anchos de columnas
+        tablalistadousuario.getColumnModel().getColumn(0).setPreferredWidth(50);   // ID
+        tablalistadousuario.getColumnModel().getColumn(1).setPreferredWidth(200);  // Usuario
+        tablalistadousuario.getColumnModel().getColumn(2).setPreferredWidth(150);  // Rol
+        
+        // Listener para selección en tabla
+        tablalistadousuario.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadousuario.getSelectedRow();
+                if (row != -1) {
+                    mostrarDatosSeleccionados(row);
+                }
+            }
+        });
+
+        // Configurar botones
+        Color btnBackground = new Color(64, 123, 255);
+        Color btnForeground = Color.WHITE;
+        
+        btnNuevo.setBackground(btnBackground);
+        btnguardar.setBackground(btnBackground);
+        btncancelar.setBackground(btnBackground);
+        btneliminar.setBackground(btnBackground);
+        btnsalir.setBackground(btnBackground);
+        btsbuscar.setBackground(btnBackground);
+        
+        btnNuevo.setForeground(btnForeground);
+        btnguardar.setForeground(btnForeground);
+        btncancelar.setForeground(btnForeground);
+        btneliminar.setForeground(btnForeground);
+        btnsalir.setForeground(btnForeground);
+        btsbuscar.setForeground(btnForeground);
+
+        // Configurar tamaños uniformes para botones
+        Dimension buttonSize = new Dimension(100, 30);
+        btnNuevo.setPreferredSize(buttonSize);
+        btnguardar.setPreferredSize(buttonSize);
+        btncancelar.setPreferredSize(buttonSize);
+        btneliminar.setPreferredSize(buttonSize);
+        btnsalir.setPreferredSize(buttonSize);
+        btsbuscar.setPreferredSize(buttonSize);
+
+        // Eventos de botones
+        btnsalir.addActionListener(e -> dispose());
+        btncancelar.addActionListener(e -> limpiarCampos());
+        btnNuevo.addActionListener(e -> limpiarCampos());
+
+        // Configurar ComboBox de roles
+        cbotipodocumento.setModel(new DefaultComboBoxModel<>(new String[]{"ADMIN", "RECEPCIONISTA"}));
+        
+        // Agregar campo ID oculto
+        txtIdUsuario = new JTextField();
+        txtIdUsuario.setVisible(false);
+    }
+
+    private void mostrarDatosSeleccionados(int row) {
+        txtIdUsuario.setText(tablalistadousuario.getValueAt(row, 0).toString());
+        txtnombre.setText(tablalistadousuario.getValueAt(row, 1).toString());
+        cbotipodocumento.setSelectedItem(tablalistadousuario.getValueAt(row, 2).toString());
+        
+        // Mostrar indicador de contraseña encriptada
+        txtapellido.setText("[ENCRIPTADA]");
+        txtapellido.setEditable(true);
+        
+        // Agregar tooltip informativo
+        txtapellido.setToolTipText("Contraseña encriptada. Ingrese una nueva para cambiarla.");
+    }
+
+    public void limpiarCampos() {
+        txtIdUsuario.setText("");
+        txtnombre.setText("");
+        txtapellido.setText("");
+        txtapellido.setEditable(true);
+        txtapellido.setToolTipText("Ingrese la contraseña del usuario");
+        cbotipodocumento.setSelectedIndex(0);
+        tablalistadousuario.clearSelection();
+    }
+
+    public void actualizarTabla(List<Usuarios> usuarios) {
+        DefaultTableModel modelo = (DefaultTableModel) tablalistadousuario.getModel();
+        modelo.setRowCount(0);
+        
+        for (Usuarios u : usuarios) {
+            modelo.addRow(new Object[]{
+                u.getId(),
+                u.getNombreUsuario(),
+                u.getRol()
+            });
+        }
+        
+        lbltotalregistro.setText("Total: " + usuarios.size());
+    }
+
+    // Getters para el controlador
+    public JTextField getTxtIdUsuario() { return txtIdUsuario; }
+    public JTextField getTxtNombreUsuario() { return txtnombre; }
+    public JTextField getTxtContrasena() { return txtapellido; }
+    public JComboBox<String> getCboRol() { return cbotipodocumento; }
+    public JTextField getTxtBuscar() { return txtbuscar; }
+    public JTable getTablaUsuarios() { return tablalistadousuario; }
+    public JButton getBtnNuevo() { return btnNuevo; }
+    public JButton getBtnGuardar() { return btnguardar; }
+    public JButton getBtnEliminar() { return btneliminar; }
+    public JButton getBtnBuscar() { return btsbuscar; }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -51,7 +189,7 @@ public class Usuario extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
-        jLabel1.setText("USUARIO");
+        jLabel1.setText("GESTIÓN DE USUARIOS");
 
         jPanel3.setBackground(new java.awt.Color(255, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("REGISTRO DE USUARIO"));
@@ -69,6 +207,11 @@ public class Usuario extends javax.swing.JFrame {
         jLabel9.setText("ROL:");
 
         cbotipodocumento.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "RECEPCIONISTA", "ADMINISTRADOR" }));
+        cbotipodocumento.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbotipodocumentoActionPerformed(evt);
+            }
+        });
 
         btnNuevo.setText("NUEVO");
 
@@ -217,7 +360,7 @@ public class Usuario extends javax.swing.JFrame {
                         .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jLabel1)))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(23, Short.MAX_VALUE))
@@ -268,40 +411,9 @@ public class Usuario extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtnombreActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Usuario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Usuario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Usuario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Usuario.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Usuario().setVisible(true);
-            }
-        });
-    }
+    private void cbotipodocumentoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbotipodocumentoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_cbotipodocumentoActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnNuevo;
@@ -326,4 +438,7 @@ public class Usuario extends javax.swing.JFrame {
     private javax.swing.JTextField txtbuscar;
     private javax.swing.JTextField txtnombre;
     // End of variables declaration//GEN-END:variables
+
+    // Variables declaration - agregadas
+    private JTextField txtIdUsuario;
 }

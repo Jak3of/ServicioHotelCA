@@ -46,6 +46,17 @@ public class ConsumoServicioController {
         view.getBtnBuscarAlojamiento().addActionListener(e -> mostrarSelectorAlojamientos());
         view.getBtnBuscarServicio().addActionListener(e -> mostrarSelectorServicios());
 
+        // Agregar listener para la selección de la tabla
+        view.getTablaConsumo().getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = view.getTablaConsumo().getSelectedRow();
+                if (selectedRow != -1) {
+                    logger.info("Fila seleccionada: {}", selectedRow);
+                    // La vista ya maneja esto en su propio listener
+                }
+            }
+        });
+
         // Cargar datos iniciales
         try {
             logger.info("Cargando datos iniciales...");
@@ -61,23 +72,77 @@ public class ConsumoServicioController {
         try {
             logger.debug("Iniciando proceso de guardado de consumo");
             
-            // Validar datos
-            if (view.getAlojamientoSeleccionado() == null) {
-                throw new Exception("Debe seleccionar un alojamiento");
-            }
-            if (view.getServicioSeleccionado() == null) {
-                throw new Exception("Debe seleccionar un servicio");
+            // Validar campos básicos primero
+            String idAlojamientoText = view.getTxtIdAlojamiento().getText().trim();
+            String idServicioText = view.getTxtIdServicio().getText().trim();
+            String cantidadText = view.getTxtCantidad().getText().trim();
+            
+            if (idAlojamientoText.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "Debe seleccionar un alojamiento usando el botón BUSCAR");
+                return;
             }
             
+            if (idServicioText.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "Debe seleccionar un servicio usando el botón BUSCAR");
+                return;
+            }
+            
+            if (cantidadText.isEmpty()) {
+                JOptionPane.showMessageDialog(view, "Debe ingresar la cantidad");
+                view.getTxtCantidad().requestFocus();
+                return;
+            }
+            
+            // Validar que los objetos seleccionados existan
+            Alojamientos alojamientoSeleccionado = view.getAlojamientoSeleccionado();
+            Servicios servicioSeleccionado = view.getServicioSeleccionado();
+            
+            if (alojamientoSeleccionado == null) {
+                JOptionPane.showMessageDialog(view, 
+                    "Error: No se pudo obtener la información del alojamiento.\n" +
+                    "Por favor, seleccione nuevamente un alojamiento.",
+                    "Error de Alojamiento", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            if (servicioSeleccionado == null) {
+                JOptionPane.showMessageDialog(view, 
+                    "Error: No se pudo obtener la información del servicio.\n" +
+                    "Por favor, seleccione nuevamente un servicio.",
+                    "Error de Servicio", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            
+            // Validar cantidad
+            int cantidad;
+            try {
+                cantidad = Integer.parseInt(cantidadText);
+                if (cantidad <= 0) {
+                    JOptionPane.showMessageDialog(view, "La cantidad debe ser mayor a 0");
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(view, "La cantidad debe ser un número válido");
+                return;
+            }
+            
+            // Crear el objeto consumo
             com.mycompany.avanceproyecto.model.ConsumoServicio consumo = 
                 new com.mycompany.avanceproyecto.model.ConsumoServicio();
-            consumo.setAlojamiento(view.getAlojamientoSeleccionado());
-            consumo.setServicio(view.getServicioSeleccionado());
-            consumo.setCantidad(Integer.parseInt(view.getTxtCantidad().getText()));
+            consumo.setAlojamiento(alojamientoSeleccionado);
+            consumo.setServicio(servicioSeleccionado);
+            consumo.setCantidad(cantidad);
             
+            // Guardar en la base de datos
             service.registrarConsumo(consumo);
             
-            JOptionPane.showMessageDialog(view, "Consumo registrado con éxito");
+            JOptionPane.showMessageDialog(view, 
+                "Consumo registrado con éxito\n" +
+                "Alojamiento: " + alojamientoSeleccionado.getId() + "\n" +
+                "Servicio: " + servicioSeleccionado.getNombre() + "\n" +
+                "Cantidad: " + cantidad);
             
             limpiarFormulario();
             cargarConsumos();
@@ -110,13 +175,13 @@ public class ConsumoServicioController {
                     
                     double total = c.getCantidad() * c.getServicio().getPrecio();
                     modelo.addRow(new Object[]{
-                        c.getId(),
-                        "Aloj. " + c.getAlojamiento().getId(),
-                        c.getAlojamiento().getCliente().getNombre(),
-                        c.getServicio().getNombre(),
-                        c.getCantidad(),
-                        c.getServicio().getPrecio(),
-                        total
+                        c.getId(),                              // Columna 0: ID del consumo
+                        "Aloj. " + c.getAlojamiento().getId(),  // Columna 1: ID del alojamiento
+                        c.getAlojamiento().getCliente().getNombre(), // Columna 2: Cliente
+                        c.getServicio().getNombre(),            // Columna 3: Servicio
+                        c.getCantidad(),                        // Columna 4: Cantidad
+                        c.getServicio().getPrecio(),            // Columna 5: Precio unitario
+                        String.format("%.2f", total)           // Columna 6: Total
                     });
                 } else {
                     logger.warn("ConsumoServicio con ID {} tiene datos incompletos", c.getId());
@@ -127,6 +192,9 @@ public class ConsumoServicioController {
         }
         
         view.actualizarTotalRegistros(modelo.getRowCount());
+        
+        // Limpiar selección
+        view.getTablaConsumo().clearSelection();
     }
 
     private void eliminarConsumo() {
@@ -159,6 +227,7 @@ public class ConsumoServicioController {
 
     private void limpiarFormulario() {
         view.limpiarFormulario();
+        view.getTablaConsumo().clearSelection();
     }
 
     private void mostrarSelectorAlojamientos() {
@@ -179,19 +248,31 @@ public class ConsumoServicioController {
             }
             
             JScrollPane scroll = new JScrollPane(tablaTemp);
+            scroll.setPreferredSize(new java.awt.Dimension(600, 300));
+            
             int result = JOptionPane.showConfirmDialog(view, scroll, 
-                "Seleccionar Alojamiento", JOptionPane.OK_CANCEL_OPTION);
+                "Seleccionar Alojamiento", JOptionPane.OK_CANCEL_OPTION, 
+                JOptionPane.PLAIN_MESSAGE);
                 
             if (result == JOptionPane.OK_OPTION) {
                 int fila = tablaTemp.getSelectedRow();
                 if (fila != -1) {
-                    view.getTxtIdAlojamiento().setText(tablaTemp.getValueAt(fila, 0).toString());
-                    view.getTxtAlojamiento().setText(tablaTemp.getValueAt(fila, 1).toString());
+                    int idAlojamiento = (Integer) tablaTemp.getValueAt(fila, 0);
+                    String cliente = (String) tablaTemp.getValueAt(fila, 1);
+                    String habitacion = (String) tablaTemp.getValueAt(fila, 2);
+                    
+                    // Actualizar los campos de la vista
+                    view.getTxtIdAlojamiento().setText(String.valueOf(idAlojamiento));
+                    view.getTxtAlojamiento().setText(cliente + " - Hab. " + habitacion);
+                    
+                    logger.info("Alojamiento seleccionado: ID {}, Cliente: {}", idAlojamiento, cliente);
+                } else {
+                    JOptionPane.showMessageDialog(view, "Por favor, seleccione un alojamiento de la lista");
                 }
             }
         } catch (Exception e) {
             logger.error("Error al mostrar selector de alojamientos", e);
-            JOptionPane.showMessageDialog(view, "Error al cargar alojamientos");
+            JOptionPane.showMessageDialog(view, "Error al cargar alojamientos: " + e.getMessage());
         }
     }
 
@@ -206,26 +287,39 @@ public class ConsumoServicioController {
                 modelo.addRow(new Object[]{
                     s.getId(),
                     s.getNombre(),
-                    s.getPrecio()
+                    String.format("S/ %.2f", s.getPrecio())
                 });
             }
             
             JScrollPane scroll = new JScrollPane(tablaTemp);
+            scroll.setPreferredSize(new java.awt.Dimension(500, 300));
+            
             int result = JOptionPane.showConfirmDialog(view, scroll, 
-                "Seleccionar Servicio", JOptionPane.OK_CANCEL_OPTION);
+                "Seleccionar Servicio", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
                 
             if (result == JOptionPane.OK_OPTION) {
                 int fila = tablaTemp.getSelectedRow();
                 if (fila != -1) {
-                    view.getTxtIdServicio().setText(tablaTemp.getValueAt(fila, 0).toString());
-                    view.getTxtServicio().setText(tablaTemp.getValueAt(fila, 1).toString());
-                    view.getTxtPrecio().setText(tablaTemp.getValueAt(fila, 2).toString());
+                    int idServicio = (Integer) tablaTemp.getValueAt(fila, 0);
+                    String nombreServicio = (String) tablaTemp.getValueAt(fila, 1);
+                    double precio = servicios.get(fila).getPrecio(); // Obtener precio real
+                    
+                    // Actualizar los campos de la vista
+                    view.getTxtIdServicio().setText(String.valueOf(idServicio));
+                    view.getTxtServicio().setText(nombreServicio);
+                    view.getTxtPrecio().setText(String.valueOf(precio));
                     view.getTxtPrecio().setEditable(false);
+                    
+                    logger.info("Servicio seleccionado: ID {}, Nombre: {}, Precio: {}", 
+                               idServicio, nombreServicio, precio);
+                } else {
+                    JOptionPane.showMessageDialog(view, "Por favor, seleccione un servicio de la lista");
                 }
             }
         } catch (Exception e) {
             logger.error("Error al mostrar selector de servicios", e);
-            JOptionPane.showMessageDialog(view, "Error al cargar servicios");
+            JOptionPane.showMessageDialog(view, "Error al cargar servicios: " + e.getMessage());
         }
     }
 }

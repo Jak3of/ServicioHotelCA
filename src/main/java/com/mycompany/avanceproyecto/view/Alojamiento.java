@@ -24,6 +24,7 @@ import com.toedter.calendar.JDateChooser;
  * @author Pablo Tello
  */
 public class Alojamiento extends JInternalFrame {
+    private static final Logger logger = LoggerFactory.getLogger(Alojamiento.class);
     
     // Agregar getters para el controlador
     public JTextField getTxtIdAlojamiento() { return txtIdalojamiento; }
@@ -116,14 +117,110 @@ public class Alojamiento extends JInternalFrame {
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-        setSize(1000, 600);
-        setVisible(true);  // Asegurarse que la ventana sea visible
+        setSize(1163, 438);
+        setVisible(true);
         
         // Configurar la tabla
         String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
         tablalistadoalojamiento.setModel(modelo);
         tablalistadoalojamiento.getTableHeader().setReorderingAllowed(false);
+        
+        // AGREGAR LISTENER PARA LA SELECCIÓN DE LA TABLA
+        tablalistadoalojamiento.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int row = tablalistadoalojamiento.getSelectedRow();
+                if (row != -1) {
+                    mostrarDatosSeleccionados(row);
+                }
+            }
+        });
+    }
+
+    // AGREGAR MÉTODO PARA MOSTRAR DATOS SELECCIONADOS
+    private void mostrarDatosSeleccionados(int row) {
+        try {
+            // Obtener datos de la tabla según las columnas:
+            // {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"}
+            
+            // ID del alojamiento (columna 0)
+            txtIdalojamiento.setText(tablalistadoalojamiento.getValueAt(row, 0).toString());
+            
+            // Cliente (columna 1) - necesitamos buscar el ID del cliente
+            String nombreCliente = tablalistadoalojamiento.getValueAt(row, 1).toString();
+            txtxliente.setText(nombreCliente);
+            
+            // Habitación (columna 2) - necesitamos buscar el ID de la habitación
+            String numeroHabitacion = tablalistadoalojamiento.getValueAt(row, 2).toString();
+            txthabitacion.setText(numeroHabitacion);
+            
+            // Costo (columna 5)
+            String costo = tablalistadoalojamiento.getValueAt(row, 5).toString();
+            txtcosto.setText(costo);
+            
+            // Fechas (columnas 3 y 4) - convertir strings a Date
+            try {
+                String fechaEntradaStr = tablalistadoalojamiento.getValueAt(row, 3).toString();
+                String fechaSalidaStr = tablalistadoalojamiento.getValueAt(row, 4).toString();
+                
+                // Convertir LocalDate strings a Date para los JDateChooser
+                java.time.LocalDate fechaEntrada = java.time.LocalDate.parse(fechaEntradaStr);
+                java.time.LocalDate fechaSalida = java.time.LocalDate.parse(fechaSalidaStr);
+                
+                // Convertir a Date para los JDateChooser
+                java.util.Date dateEntrada = java.util.Date.from(fechaEntrada.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+                java.util.Date dateSalida = java.util.Date.from(fechaSalida.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
+                
+                dcfechaingreso.setDate(dateEntrada);
+                dcfechasalida.setDate(dateSalida);
+            } catch (Exception e) {
+                logger.warn("Error al convertir fechas: {}", e.getMessage());
+                dcfechaingreso.setDate(null);
+                dcfechasalida.setDate(null);
+            }
+            
+            // Para obtener los IDs reales, necesitamos buscarlos en el servicio
+            // (esto es opcional, solo si necesitas los IDs exactos)
+            try {
+                // Buscar cliente por nombre para obtener ID
+                com.mycompany.avanceproyecto.service.ClienteService clienteService = 
+                    new com.mycompany.avanceproyecto.service.ClienteService();
+                java.util.List<com.mycompany.avanceproyecto.model.Clientes> clientes = 
+                    clienteService.listarClientes();
+                
+                for (com.mycompany.avanceproyecto.model.Clientes c : clientes) {
+                    if (c.getNombre().equals(nombreCliente)) {
+                        txtidcliente.setText(String.valueOf(c.getId()));
+                        break;
+                    }
+                }
+                
+                // Buscar habitación por número para obtener ID
+                com.mycompany.avanceproyecto.service.HabitacionService habitacionService = 
+                    new com.mycompany.avanceproyecto.service.HabitacionService();
+                java.util.List<com.mycompany.avanceproyecto.model.Habitaciones> habitaciones = 
+                    habitacionService.listarHabitaciones();
+                
+                for (com.mycompany.avanceproyecto.model.Habitaciones h : habitaciones) {
+                    if (h.getNumero().equals(numeroHabitacion)) {
+                        txtidhabitacion.setText(String.valueOf(h.getId()));
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                logger.warn("Error al obtener IDs: {}", e.getMessage());
+                // Si no se pueden obtener los IDs, dejar los campos vacíos
+                txtidcliente.setText("");
+                txtidhabitacion.setText("");
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al mostrar datos seleccionados", e);
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Error al cargar los datos seleccionados: " + e.getMessage(),
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void setupButtons() {
@@ -431,16 +528,16 @@ public class Alojamiento extends JInternalFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addGap(394, 394, 394)
+                        .addGap(396, 396, 396)
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 162, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(26, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(25, 25, 25)
+                .addGap(13, 13, 13)
                 .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))

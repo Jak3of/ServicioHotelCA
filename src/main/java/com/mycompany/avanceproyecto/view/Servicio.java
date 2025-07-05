@@ -33,7 +33,7 @@ public class Servicio extends JInternalFrame {
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-        setSize(1000, 600);
+        setSize(1204, 397);
         
         // Remover el EXIT_ON_CLOSE ya que es un JInternalFrame
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -626,7 +626,9 @@ public class Servicio extends JInternalFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 348, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(13, Short.MAX_VALUE))
         );
 
         pack();

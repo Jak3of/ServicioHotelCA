@@ -4,6 +4,7 @@
  */
 package com.mycompany.avanceproyecto.view;
 
+import com.mycompany.avanceproyecto.util.SessionManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -31,6 +32,18 @@ public class INICIO extends javax.swing.JFrame {
         
         // Dar color de fondo al desktopPane (opcional)
         desktopPane.setBackground(new Color(240, 240, 240));
+        
+        // Configurar permisos según el rol del usuario
+        configurarPermisosPorRol();
+    }
+    
+    private void configurarPermisosPorRol() {
+        // Si es recepcionista, ocultar menú de configuraciones
+        if (SessionManager.esRecepcionista()) {
+            jMenu2.setVisible(false); // Ocultar menú "CONFIGURACIONES"
+            editMenu.setVisible(false); // Ocultar menú "ARCHIVO"
+            logger.info("Menú ARCHIVO Y CONFIGURACIONES oculto para usuario RECEPCIONISTA");
+        }
     }
 
     /**
@@ -197,7 +210,26 @@ public class INICIO extends javax.swing.JFrame {
 
         // Menú Configuraciones
         jMenuItem2.addActionListener(e -> {
-            new Usuario().setVisible(true); // Abre ventana Usuarios
+            // Verificar permisos antes de abrir usuarios
+            if (SessionManager.esRecepcionista()) {
+                JOptionPane.showMessageDialog(this, 
+                    "No tiene permisos para acceder a esta sección",
+                    "Acceso Denegado",
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            try {
+                logger.info("Abriendo ventana Usuarios");
+                Usuario frame = new Usuario();
+                frame.setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
+                desktopPane.add(frame);
+                frame.setVisible(true);
+                frame.setSelected(true);
+            } catch (Exception ex) {
+                logger.error("Error al abrir ventana Usuarios", ex);
+                JOptionPane.showMessageDialog(this, "Error al abrir ventana Usuarios: " + ex.getMessage());
+            }
         });
 
         // Menú Salir

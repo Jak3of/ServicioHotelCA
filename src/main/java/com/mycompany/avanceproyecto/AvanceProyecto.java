@@ -84,70 +84,82 @@ public class AvanceProyecto {
         }
     }
     
+    /**
+     * Verifica que las credenciales de administrador estén configuradas correctamente
+     */
     private static void verificarCredencialesAdmin() {
-        try {
-            logger.info("Verificando credenciales de administrador...");
-            
-            // Verificar directamente en la base de datos
-            try (java.sql.Connection conn = com.mycompany.avanceproyecto.config.DatabaseConfig.getConnection()) {
-                // Primero verificar que la tabla usuarios existe
-                try (java.sql.Statement checkStmt = conn.createStatement();
-                     java.sql.ResultSet tables = checkStmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios'")) {
-                    
-                    if (!tables.next()) {
-                        logger.error("❌ Tabla 'usuarios' no existe");
-                        throw new RuntimeException("Tabla usuarios no fue creada correctamente");
-                    }
+        logger.info("Verificando credenciales de administrador...");
+        
+        try (java.sql.Connection conn = com.mycompany.avanceproyecto.config.DatabaseConfig.getConnection()) {
+            // Verificar que la tabla usuarios existe
+            try (java.sql.Statement stmt = conn.createStatement()) {
+                java.sql.ResultSet rs = stmt.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='usuarios'");
+                if (rs.next()) {
                     logger.info("✅ Tabla 'usuarios' encontrada");
-                }
-                
-                // Ahora verificar las credenciales del admin
-                try (java.sql.PreparedStatement stmt = conn.prepareStatement("SELECT * FROM usuarios WHERE nombre_usuario = ? AND contrasena = ?")) {
-                    stmt.setString(1, "admin");
-                    stmt.setString(2, "admin123");
-                    
-                    try (java.sql.ResultSet rs = stmt.executeQuery()) {
-                        if (rs.next()) {
-                            logger.info("✅ Usuario admin encontrado correctamente");
-                            logger.info("ID: {}, Usuario: {}, Rol: {}", 
-                                rs.getInt("id"), 
-                                rs.getString("nombre_usuario"), 
-                                rs.getString("rol"));
-                        } else {
-                            logger.error("❌ Usuario admin NO encontrado");
-                            
-                            // Intentar crear el usuario admin si no existe
-                            logger.info("Intentando crear usuario admin...");
-                            try (java.sql.PreparedStatement insertStmt = conn.prepareStatement(
-                                "INSERT INTO usuarios (nombre_usuario, contrasena, rol) VALUES (?, ?, ?)")) {
-                                insertStmt.setString(1, "admin");
-                                insertStmt.setString(2, "admin123");
-                                insertStmt.setString(3, "ADMIN");
-                                insertStmt.executeUpdate();
-                                logger.info("✅ Usuario admin creado exitosamente");
-                            }
-                        }
-                    }
-                }
-                
-                // Verificar todos los usuarios en la base de datos para debug
-                try (java.sql.Statement debugStmt = conn.createStatement();
-                     java.sql.ResultSet allUsers = debugStmt.executeQuery("SELECT * FROM usuarios")) {
-                    logger.info("=== Usuarios en la base de datos ===");
-                    while (allUsers.next()) {
-                        logger.info("Usuario: {}, Contraseña: {}, Rol: {}", 
-                            allUsers.getString("nombre_usuario"),
-                            allUsers.getString("contrasena"),
-                            allUsers.getString("rol"));
-                    }
-                    logger.info("=== Fin lista usuarios ===");
+                } else {
+                    logger.error("❌ Tabla 'usuarios' no existe");
+                    return;
                 }
             }
             
+            // Verificar que el usuario admin existe y está correctamente configurado
+            String checkAdminSQL = "SELECT id, nombre_usuario, rol, contrasena FROM usuarios WHERE nombre_usuario = ?";
+            try (java.sql.PreparedStatement checkStmt = conn.prepareStatement(checkAdminSQL)) {
+                checkStmt.setString(1, "admin");
+                java.sql.ResultSet rs = checkStmt.executeQuery();
+                
+                if (rs.next()) {
+                    String rol = rs.getString("rol");
+                    String contrasena = rs.getString("contrasena");
+                    logger.info("✅ Usuario admin encontrado con rol: {}", rol);
+                    
+                    // Verificar que tenga rol de ADMIN
+                    if (!"ADMIN".equals(rol)) {
+                        logger.warn("⚠️ Usuario admin no tiene rol ADMIN, actualizando...");
+                        String updateRolSQL = "UPDATE usuarios SET rol = 'ADMIN' WHERE nombre_usuario = 'admin'";
+                        try (java.sql.Statement updateStmt = conn.createStatement()) {
+                            updateStmt.executeUpdate(updateRolSQL);
+                            logger.info("✅ Rol de admin actualizado a ADMIN");
+                        }
+                    }
+                    
+                    // Verificar que la contraseña esté encriptada
+                    if (com.mycompany.avanceproyecto.util.PasswordEncryption.isEncrypted(contrasena)) {
+                        logger.info("✅ Contraseña de admin está correctamente encriptada");
+                    } else {
+                        logger.info("🔐 Encriptando contraseña de admin...");
+                        String contrasenaEncriptada = com.mycompany.avanceproyecto.util.PasswordEncryption.encrypt(contrasena);
+                        String updatePwdSQL = "UPDATE usuarios SET contrasena = ? WHERE nombre_usuario = 'admin'";
+                        try (java.sql.PreparedStatement updatePwdStmt = conn.prepareStatement(updatePwdSQL)) {
+                            updatePwdStmt.setString(1, contrasenaEncriptada);
+                            updatePwdStmt.executeUpdate();
+                            logger.info("✅ Contraseña de admin encriptada correctamente");
+                        }
+                    }
+                } else {
+                    logger.warn("⚠️ Usuario admin NO encontrado, pero debería existir");
+                    logger.info("🔧 Creando usuario admin por defecto...");
+                    
+                    String insertAdminSQL = "INSERT OR IGNORE INTO usuarios (nombre_usuario, contrasena, rol) VALUES (?, ?, ?)";
+                    try (java.sql.PreparedStatement insertStmt = conn.prepareStatement(insertAdminSQL)) {
+                        insertStmt.setString(1, "admin");
+                        insertStmt.setString(2, com.mycompany.avanceproyecto.util.PasswordEncryption.encrypt("admin123"));
+                        insertStmt.setString(3, "ADMIN");
+                        int rowsAffected = insertStmt.executeUpdate();
+                        if (rowsAffected > 0) {
+                            logger.info("✅ Usuario admin creado correctamente");
+                        } else {
+                            logger.info("ℹ️ Usuario admin ya existía (INSERT OR IGNORE)");
+                        }
+                    }
+                }
+            }
+            
+            logger.info("✅ Verificación de credenciales admin completada");
+            
         } catch (Exception e) {
-            logger.error("Error verificando credenciales admin", e);
-            // No lanzar excepción para permitir que la aplicación continúe
-            logger.warn("Continuando con la aplicación a pesar del error de verificación");
+            logger.error("❌ Error verificando credenciales admin", e);
+            logger.warn("⚠️ Continuando con la aplicación a pesar del error de verificación");
         }
     }
 }

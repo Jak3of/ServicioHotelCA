@@ -51,6 +51,23 @@ public class login extends javax.swing.JFrame {
         txtPassword = new JPasswordField(20);
         btnLogin = new JButton("Iniciar Sesión");
         
+        // Agregar Key Listeners para Enter en ambos campos
+        txtUsername.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    handleLogin();
+                }
+            }
+        });
+        
+        txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
+                    handleLogin();
+                }
+            }
+        });
+        
         // Agregar componentes al panel
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.gridx = 0; gbc.gridy = 0;
@@ -76,6 +93,9 @@ public class login extends javax.swing.JFrame {
         setContentPane(mainPanel);
         revalidate();
         repaint();
+        
+        // Establecer el foco en el campo de usuario al abrir
+        SwingUtilities.invokeLater(() -> txtUsername.requestFocusInWindow());
     }
     
     private void handleLogin() {
@@ -89,19 +109,32 @@ public class login extends javax.swing.JFrame {
             
             if(controller.autenticar(username, password)) {
                 logger.info("Login exitoso para usuario: {}", username);
-                JOptionPane.showMessageDialog(this, "Bienvenido al sistema");
-                // Abrir ventana de inicio y cerrar login
+                // Eliminar el mensaje de bienvenida
+                // JOptionPane.showMessageDialog(this, "Bienvenido al sistema");
+                
+                // Abrir ventana de inicio y cerrar login directamente
                 new INICIO().setVisible(true);
                 this.dispose();
             } else {
                 logger.warn("Intento de login fallido para usuario: {}", username);
                 JOptionPane.showMessageDialog(this, "Credenciales incorrectas",
                     "Error", JOptionPane.ERROR_MESSAGE);
+                
+                // Limpiar campos y enfocar usuario después de error
+                txtPassword.setText("");
+                txtUsername.requestFocusInWindow();
             }
         } catch (IllegalArgumentException e) {
             logger.error("Error de validación", e);
             JOptionPane.showMessageDialog(this, e.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
+            
+            // Enfocar el campo apropiado según el error
+            if (txtUsername.getText().isEmpty()) {
+                txtUsername.requestFocusInWindow();
+            } else {
+                txtPassword.requestFocusInWindow();
+            }
         }
     }
 

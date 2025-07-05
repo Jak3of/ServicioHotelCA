@@ -38,7 +38,7 @@ public class ConsumoServicio extends JInternalFrame {
         setIconifiable(true);
         setMaximizable(true);
         setResizable(true);
-        setSize(1200, 700);
+        setSize(1164, 410);
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
         setVisible(true);
     }
@@ -66,8 +66,61 @@ public class ConsumoServicio extends JInternalFrame {
     }
 
     private void mostrarDatosSeleccionados(int row) {
-        txtIdalojamiento.setText(tablalistadoconsumo.getValueAt(row, 0).toString());
-        // Aquí puedes agregar más lógica para mostrar los datos seleccionados
+        try {
+            // Obtener datos de la tabla según las columnas definidas en el controlador:
+            // {"ID", "Alojamiento", "Cliente", "Servicio", "Cantidad", "Precio Unit.", "Total"}
+            
+            // ID del consumo (columna 0) - lo ponemos en el campo ID oculto
+            txtIdalojamiento.setText(tablalistadoconsumo.getValueAt(row, 0).toString());
+            
+            // Información del alojamiento (columna 1) - extraer ID del formato "Aloj. X"
+            String alojamientoInfo = tablalistadoconsumo.getValueAt(row, 1).toString();
+            String idAlojamiento = alojamientoInfo.replace("Aloj. ", "");
+            txtidalojamiento.setText(idAlojamiento);
+            
+            // Cliente (columna 2) - mostrar en el campo de alojamiento
+            String cliente = tablalistadoconsumo.getValueAt(row, 2).toString();
+            txtalojamiento.setText(cliente);
+            
+            // Servicio (columna 3)
+            String servicio = tablalistadoconsumo.getValueAt(row, 3).toString();
+            txtservicio.setText(servicio);
+            
+            // Cantidad (columna 4)
+            String cantidad = tablalistadoconsumo.getValueAt(row, 4).toString();
+            txtcantidad.setText(cantidad);
+            
+            // Precio unitario (columna 5)
+            String precioUnit = tablalistadoconsumo.getValueAt(row, 5).toString();
+            txtprecio.setText(precioUnit);
+            
+            // Para obtener el ID del servicio, necesitamos buscarlo
+            // Intentar obtener el ID del servicio basado en el nombre
+            try {
+                com.mycompany.avanceproyecto.service.ServicioService servicioService = 
+                    new com.mycompany.avanceproyecto.service.ServicioService();
+                java.util.List<com.mycompany.avanceproyecto.model.Servicios> servicios = 
+                    servicioService.listarServicios();
+                
+                for (com.mycompany.avanceproyecto.model.Servicios s : servicios) {
+                    if (s.getNombre().equals(servicio)) {
+                        txtidservicio.setText(String.valueOf(s.getId()));
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                // Si no se puede obtener el ID del servicio, dejarlo vacío
+                txtidservicio.setText("");
+            }
+            
+        } catch (Exception e) {
+            // Si hay algún error, limpiar los campos
+            limpiarFormulario();
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Error al cargar los datos seleccionados: " + e.getMessage(),
+                "Error",
+                javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void limpiarFormulario() {
@@ -102,10 +155,23 @@ public class ConsumoServicio extends JInternalFrame {
     // Métodos para obtener objetos seleccionados
     public Alojamientos getAlojamientoSeleccionado() {
         try {
-            int idAlojamiento = Integer.parseInt(txtidalojamiento.getText());
-            // Aquí necesitarías obtener el alojamiento completo del servicio
-            // Por simplicidad, retornamos null por ahora
-            return null;
+            String idAlojamientoText = txtidalojamiento.getText().trim();
+            
+            if (idAlojamientoText.isEmpty()) {
+                return null;
+            }
+            
+            int idAlojamiento = Integer.parseInt(idAlojamientoText);
+            
+            // Obtener el alojamiento completo del servicio
+            try {
+                com.mycompany.avanceproyecto.service.AlojamientoService alojamientoService = 
+                    new com.mycompany.avanceproyecto.service.AlojamientoService();
+                return alojamientoService.obtenerAlojamiento(idAlojamiento);
+            } catch (Exception e) {
+                return null;
+            }
+            
         } catch (NumberFormatException e) {
             return null;
         }
@@ -113,10 +179,18 @@ public class ConsumoServicio extends JInternalFrame {
 
     public Servicios getServicioSeleccionado() {
         try {
-            int idServicio = Integer.parseInt(txtidservicio.getText());
-            String nombreServicio = txtservicio.getText();
-            double precio = Double.parseDouble(txtprecio.getText());
-            return new Servicios(idServicio, nombreServicio, precio);
+            String idServicioText = txtidservicio.getText().trim();
+            String nombreServicio = txtservicio.getText().trim();
+            String precioText = txtprecio.getText().trim();
+            
+            if (idServicioText.isEmpty() || nombreServicio.isEmpty() || precioText.isEmpty()) {
+                return null;
+            }
+            
+            int idServicio = Integer.parseInt(idServicioText);
+            double precio = Double.parseDouble(precioText);
+            
+            return new com.mycompany.avanceproyecto.model.Servicios(idServicio, nombreServicio, precio);
         } catch (NumberFormatException e) {
             return null;
         }
@@ -160,7 +234,7 @@ public class ConsumoServicio extends JInternalFrame {
         btnsalir = new javax.swing.JButton();
         lbltotalregistro = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 18)); // NOI18N
         jLabel1.setText("CONSUMO DE SERVICIO");
@@ -347,10 +421,6 @@ public class ConsumoServicio extends JInternalFrame {
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(lbltotalregistro, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(140, 140, 140))
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addGap(17, 17, 17)
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -366,6 +436,10 @@ public class ConsumoServicio extends JInternalFrame {
                         .addGap(44, 44, 44)
                         .addComponent(btnsalir)))
                 .addContainerGap(19, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lbltotalregistro, javax.swing.GroupLayout.PREFERRED_SIZE, 77, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(139, 139, 139))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -379,9 +453,9 @@ public class ConsumoServicio extends JInternalFrame {
                     .addComponent(btnsalir))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lbltotalregistro)
-                .addContainerGap(100, Short.MAX_VALUE))
+                .addContainerGap(112, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);

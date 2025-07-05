@@ -33,7 +33,7 @@ public class Habitacion extends JInternalFrame {
         setIconifiable(true);       // Permite minimizar
         setMaximizable(true);       // Permite maximizar
         setResizable(true);         // Permite redimensionar
-        setSize(1000, 600);         // Tamaño de la ventana
+        setSize(1056, 409);         // Tamaño de la ventana
         
         // Configurar comportamiento al cerrar
         setDefaultCloseOperation(JInternalFrame.DISPOSE_ON_CLOSE);
@@ -408,7 +408,7 @@ public class Habitacion extends JInternalFrame {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 17, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -427,7 +427,7 @@ public class Habitacion extends JInternalFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 6, Short.MAX_VALUE))
+                .addGap(0, 0, Short.MAX_VALUE))
         );
 
         pack();

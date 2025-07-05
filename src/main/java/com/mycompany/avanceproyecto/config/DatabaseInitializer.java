@@ -27,6 +27,10 @@ public class DatabaseInitializer {
             insertInitialData(conn);
             logger.info("Datos iniciales insertados correctamente");
             
+            // Migrar contraseñas existentes a encriptadas
+            logger.info("Ejecutando migración de contraseñas...");
+            com.mycompany.avanceproyecto.util.PasswordMigrationUtil.migratePasswords();
+            
             // Verificar que los datos se insertaron
             verifyData(conn);
             
@@ -158,7 +162,7 @@ public class DatabaseInitializer {
     private static void insertInitialData(Connection conn) throws Exception {
     try (Statement stmt = conn.createStatement()) {
 
-        // Usuario
+        // Usuario - con contraseña en texto plano que será encriptada después
         stmt.execute("""
             INSERT OR IGNORE INTO usuarios (nombre_usuario, contrasena, rol)
             VALUES ('admin', 'admin123', 'ADMIN')

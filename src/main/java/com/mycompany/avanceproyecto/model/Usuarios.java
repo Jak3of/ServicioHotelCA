@@ -1,4 +1,3 @@
-
 package com.mycompany.avanceproyecto.model;
 
 
@@ -49,7 +48,13 @@ public class Usuarios {
     public void setRol(String rol) {
         this.rol = rol;
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        return "Usuarios{" + "id=" + id + ", nombreUsuario=" + nombreUsuario + ", contrasena=" + contrasena + ", rol=" + rol + '}';
+    }
 }
+    
+    
+    
+

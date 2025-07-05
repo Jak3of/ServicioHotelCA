@@ -1,6 +1,7 @@
 package com.mycompany.avanceproyecto.controller;
 
 import com.mycompany.avanceproyecto.service.UsuarioService;
+import com.mycompany.avanceproyecto.util.SessionManager;
 import com.mycompany.avanceproyecto.view.login;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,21 +18,23 @@ public class LoginController {
     
     public boolean autenticar(String username, String password) {
         try {
-            logger.info("🔐 Intento de login - Usuario: '{}'", username);
+            logger.info("🔍 Intento de login - Usuario: '{}'", username);
             
             com.mycompany.avanceproyecto.model.Usuarios usuario = usuarioService.autenticarUsuario(username, password);
-            boolean resultado = (usuario != null);
             
-            if (resultado) {
+            if (usuario != null) {
                 logger.info("✅ LOGIN EXITOSO para usuario: {}", username);
+                
+                // Guardar usuario en sesión
+                SessionManager.setUsuarioActual(usuario);
+                
+                return true;
             } else {
-                logger.warn("❌ CREDENCIALES INCORRECTAS para usuario: '{}'", username);
+                logger.warn("❌ LOGIN FALLIDO para usuario: {}", username);
+                return false;
             }
-            
-            return resultado;
-            
         } catch (Exception e) {
-            logger.error("💥 ERROR durante la autenticación", e);
+            logger.error("💥 Error durante autenticación", e);
             return false;
         }
     }
