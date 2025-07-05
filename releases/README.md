@@ -11,7 +11,7 @@ Esta carpeta contiene las versiones ejecutables del Sistema Hotel Casa Andina.
 
 ## Ejecución
 ```bash
-java -jar ServicioHotelCA-v1.0.jar
+java -jar ServicioHotelCA-v0.98.jar
 ```
 
 ## Credenciales por defecto
