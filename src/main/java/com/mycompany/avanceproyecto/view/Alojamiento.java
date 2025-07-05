@@ -107,6 +107,7 @@ public class Alojamiento extends JInternalFrame {
         setupFrame();
 
         new AlojamientoController(this); // El controlador se inicializa después de configurar la vista
+        
     }
 
     private void setupFrame() {
@@ -257,6 +258,11 @@ public class Alojamiento extends JInternalFrame {
         jLabel12.setText("FECHA DE SALIDA:");
 
         btnbuscahabitacion.setText("BUSCAR");
+        btnbuscahabitacion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnbuscahabitacionActionPerformed(evt);
+            }
+        });
 
         btnbuscacliente.setText("BUSCAR");
 
@@ -300,10 +306,10 @@ public class Alojamiento extends JInternalFrame {
                                 .addGap(46, 46, 46))))
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addGap(172, 172, 172)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(dcfechaingreso, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dcfechasalida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtcosto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(txtcosto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(dcfechaingreso, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                            .addComponent(dcfechasalida, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
@@ -490,6 +496,10 @@ public class Alojamiento extends JInternalFrame {
     private void txtxlienteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtxlienteActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtxlienteActionPerformed
+
+    private void btnbuscahabitacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnbuscahabitacionActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnbuscahabitacionActionPerformed
 
     /**
      * @param args the command line arguments
