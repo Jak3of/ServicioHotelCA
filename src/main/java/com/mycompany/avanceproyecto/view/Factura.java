@@ -275,20 +275,20 @@ public class Factura extends JInternalFrame {
             if (a.getEstado() != null) {
                 switch (a.getEstado()) {
                     case ACTIVO:
-                        estadoTexto = "🟡 ACTIVO";
+                        estadoTexto = "ACTIVO";
                         break;
                     case PAGADO:
-                        estadoTexto = "🟢 PAGADO";
+                        estadoTexto = "PAGADO";
                         break;
                     case FINALIZADO:
-                        estadoTexto = "⚪ FINALIZADO";
+                        estadoTexto = "FINALIZADO";
                         break;
                     default:
-                        estadoTexto = "🟡 ACTIVO";
+                        estadoTexto = "ACTIVO";
                         break;
                 }
             } else {
-                estadoTexto = "🟡 ACTIVO"; // Estado por defecto si es null
+                estadoTexto = "ACTIVO"; // Estado por defecto si es null
             }
             
             modelo.addRow(new Object[]{

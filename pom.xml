@@ -55,13 +55,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- MySQL Connector -->
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <version>8.2.0</version>
-        </dependency>
-
         <!-- SQLite JDBC -->
         <dependency>
             <groupId>org.xerial</groupId>
@@ -135,6 +128,41 @@
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- JPackage Plugin para generar ejecutable .exe -->
+            <plugin>
+                <groupId>org.panteleyev</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <name>ServicioHotelCA</name>
+                    <appVersion>${project.version}</appVersion>
+                    <vendor>ServicioHotelCA</vendor>
+                    <destination>target/dist</destination>
+                    <module>com.mycompany.avanceproyecto/com.mycompany.avanceproyecto.AvanceProyecto</module>
+                    <runtimeImage>target/runtime-image</runtimeImage>
+                    <javaOptions>
+                        <option>-Dfile.encoding=UTF-8</option>
+                    </javaOptions>
+                    <options>
+                        <option>--win-console</option>
+                        <option>--win-dir-chooser</option>
+                        <option>--win-shortcut</option>
+                        <option>--win-menu</option>
+                    </options>
+                    <icon>src/main/resources/icon.ico</icon>
+                    <type>EXE</type>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>jpackage</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jpackage</goal>
                         </goals>
                     </execution>
                 </executions>

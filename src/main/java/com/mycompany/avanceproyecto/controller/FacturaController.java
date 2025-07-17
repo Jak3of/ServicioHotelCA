@@ -27,6 +27,9 @@ public class FacturaController {
     private final ConsumoServicioService consumoService;
     private final ClienteService clienteService;
     
+    // Variable para mantener el ID del cliente actual
+    private int clienteActualId = -1;
+    
     public FacturaController(Factura view) {
         this.view = view;
         this.service = new FacturaService();
@@ -105,6 +108,9 @@ public class FacturaController {
     
     private void cargarAlojamientosDelCliente(int idCliente) {
         try {
+            // Guardar el ID del cliente actual para futuras actualizaciones
+            this.clienteActualId = idCliente;
+            
             List<Alojamientos> todosAlojamientos = alojamientoService.listarAlojamientos();
             List<Alojamientos> alojamientosCliente = todosAlojamientos.stream()
                 .filter(a -> a.getCliente().getId() == idCliente)
@@ -121,6 +127,16 @@ public class FacturaController {
         } catch (Exception e) {
             logger.error("Error al cargar alojamientos del cliente", e);
             JOptionPane.showMessageDialog(view, "Error al cargar alojamientos del cliente");
+        }
+    }
+    
+    // Método para actualizar la tabla de alojamientos después de un pago
+    private void actualizarTablaAlojamientos() {
+        if (clienteActualId != -1) {
+            logger.info("Actualizando tabla de alojamientos para cliente ID: {}", clienteActualId);
+            cargarAlojamientosDelCliente(clienteActualId);
+        } else {
+            logger.warn("No hay cliente seleccionado para actualizar la tabla");
         }
     }
     
@@ -251,6 +267,10 @@ public class FacturaController {
                             "La habitación ya está disponible para nuevos huéspedes.",
                             "Pago Completado", 
                             JOptionPane.INFORMATION_MESSAGE);
+                        
+                        // 6. Actualizar la tabla para reflejar el nuevo estado
+                        actualizarTablaAlojamientos();
+                        logger.info("✓ Tabla de alojamientos actualizada en la vista");
                         
                     } catch (Exception errorPago) {
                         logger.error("❌ Error específico en el proceso de pago", errorPago);

@@ -8,8 +8,31 @@ import org.slf4j.LoggerFactory;
 
 public class DatabaseConfig {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseConfig.class);
+    private static final String APP_NAME = "ServicioHotelCA";
     private static final String DB_NAME = "hotel.db";
-    private static final String URL = "jdbc:sqlite:" + DB_NAME;
+    
+    // Método para obtener la ruta robusta de la base de datos
+    private static String getDBPath() {
+        String userHome = System.getProperty("user.home");
+        String appDataDir = userHome + File.separator + APP_NAME;
+        
+        // Crear directorio si no existe
+        File appDir = new File(appDataDir);
+        if (!appDir.exists()) {
+            boolean created = appDir.mkdirs();
+            if (created) {
+                logger.info("Directorio de aplicación creado: {}", appDataDir);
+            } else {
+                logger.warn("No se pudo crear directorio de aplicación: {}", appDataDir);
+                // Fallback: usar directorio actual
+                return DB_NAME;
+            }
+        }
+        
+        return appDataDir + File.separator + DB_NAME;
+    }
+    
+    private static final String URL = "jdbc:sqlite:" + getDBPath();
     
     static {
         try {
@@ -24,10 +47,13 @@ public class DatabaseConfig {
     
     public static Connection getConnection() {
         try {
-            // Verificar que el directorio actual es escribible
-            File currentDir = new File(".");
-            if (!currentDir.canWrite()) {
-                logger.warn("Directorio actual no es escribible: {}", currentDir.getAbsolutePath());
+            String dbPath = getDBPath();
+            
+            // Verificar que el directorio padre es escribible
+            File dbFile = new File(dbPath);
+            File parentDir = dbFile.getParentFile();
+            if (parentDir != null && !parentDir.canWrite()) {
+                logger.warn("Directorio padre no es escribible: {}", parentDir.getAbsolutePath());
             }
             
             // Crear conexión
@@ -41,13 +67,13 @@ public class DatabaseConfig {
                 stmt.execute("PRAGMA busy_timeout = 30000");
             }
             
-            logger.debug("Conexión establecida exitosamente a: {}", new File(DB_NAME).getAbsolutePath());
+            logger.debug("Conexión establecida exitosamente a: {}", dbFile.getAbsolutePath());
             return conn;
             
         } catch (Exception e) {
             logger.error("Error conectando a la base de datos", e);
             logger.error("URL: {}", URL);
-            logger.error("Directorio actual: {}", new File(".").getAbsolutePath());
+            logger.error("Ruta DB calculada: {}", getDBPath());
             throw new RuntimeException("Error de conexión a la base de datos: " + e.getMessage(), e);
         }
     }
