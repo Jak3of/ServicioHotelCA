@@ -34,9 +34,8 @@ public class DatabaseConfig {
                 if (created) {
                     logger.info("Directorio de aplicación creado: {}", appDataDir);
                 } else {
-                    logger.warn("No se pudo crear directorio de aplicación: {}", appDataDir);
-                    // Fallback: usar directorio actual
-                    return DB_NAME;
+                    logger.error("No se pudo crear directorio de aplicación: {}", appDataDir);
+                    throw new RuntimeException("No se puede crear directorio de aplicación: " + appDataDir);
                 }
             }
             
@@ -71,8 +70,6 @@ public class DatabaseConfig {
         return false;
     }
     
-    private static final String URL = "jdbc:sqlite:" + getDBPath();
-    
     static {
         try {
             // Cargar el driver SQLite explícitamente
@@ -87,6 +84,7 @@ public class DatabaseConfig {
     public static Connection getConnection() {
         try {
             String dbPath = getDBPath();
+            String url = "jdbc:sqlite:" + dbPath;
             
             // Verificar que el directorio padre es escribible
             File dbFile = new File(dbPath);
@@ -96,7 +94,7 @@ public class DatabaseConfig {
             }
             
             // Crear conexión
-            Connection conn = DriverManager.getConnection(URL);
+            Connection conn = DriverManager.getConnection(url);
             
             // Configurar SQLite para mejor rendimiento
             try (java.sql.Statement stmt = conn.createStatement()) {
@@ -111,7 +109,7 @@ public class DatabaseConfig {
             
         } catch (Exception e) {
             logger.error("Error conectando a la base de datos", e);
-            logger.error("URL: {}", URL);
+            logger.error("URL: jdbc:sqlite:{}", getDBPath());
             logger.error("Ruta DB calculada: {}", getDBPath());
             throw new RuntimeException("Error de conexión a la base de datos: " + e.getMessage(), e);
         }

@@ -5,6 +5,7 @@
 package com.mycompany.avanceproyecto;
 
 import com.mycompany.avanceproyecto.config.DatabaseInitializer;
+import com.mycompany.avanceproyecto.config.DatabaseConfig;
 import com.mycompany.avanceproyecto.view.login;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class AvanceProyecto {
             
             // Verificar que podemos crear la conexión básica
             try {
-                java.sql.Connection testConn = java.sql.DriverManager.getConnection("jdbc:sqlite:hotel.db");
+                java.sql.Connection testConn = DatabaseConfig.getConnection();
                 testConn.close();
                 logger.info("Conexión SQLite verificada correctamente");
             } catch (Exception e) {
