@@ -29,8 +29,8 @@ class UsuarioServiceTest {
     
     @Test
     void testAutenticarUsuarioExitoso() {
-        // Test con la contrasena correcta del admin (sabemos que es "admin")
-        Usuarios usuario = usuarioService.autenticarUsuario("admin", "admin");
+        // Test con la contraseña correcta del admin (según DatabaseInitializer es "admin123")
+        Usuarios usuario = usuarioService.autenticarUsuario("admin", "admin123");
         
         assertNotNull(usuario, "El usuario admin deberia autenticarse correctamente");
         assertEquals("admin", usuario.getNombreUsuario());

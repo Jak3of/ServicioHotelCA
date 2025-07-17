@@ -140,30 +140,46 @@
                 <version>1.6.0</version>
                 <configuration>
                     <name>ServicioHotelCA</name>
-                    <appVersion>${project.version}</appVersion>
+                    <appVersion>1.0</appVersion>
                     <vendor>ServicioHotelCA</vendor>
-                    <destination>target/dist</destination>
-                    <module>com.mycompany.avanceproyecto/com.mycompany.avanceproyecto.AvanceProyecto</module>
-                    <runtimeImage>target/runtime-image</runtimeImage>
+                    <!-- CAMBIO IMPORTANTE: destination fuera de target -->
+                    <destination>dist</destination>
+                    <!-- Usar JAR en lugar de módulos -->
+                    <input>target</input>
+                    <mainJar>ServicioHotelCA-ejecutable.jar</mainJar>
+                    <mainClass>com.mycompany.avanceproyecto.AvanceProyecto</mainClass>
                     <javaOptions>
                         <option>-Dfile.encoding=UTF-8</option>
                     </javaOptions>
-                    <options>
-                        <option>--win-console</option>
-                        <option>--win-dir-chooser</option>
-                        <option>--win-shortcut</option>
-                        <option>--win-menu</option>
-                    </options>
-                    <icon>src/main/resources/icon.ico</icon>
-                    <type>EXE</type>
+                    <!-- Cambiar a app-image mientras instalamos WiX -->
+                    <type>APP_IMAGE</type>
                 </configuration>
                 <executions>
+                    <!-- Ejecución para crear portable app -->
                     <execution>
-                        <id>jpackage</id>
-                        <phase>verify</phase>
+                        <id>app-image</id>
                         <goals>
                             <goal>jpackage</goal>
                         </goals>
+                        <configuration>
+                            <type>APP_IMAGE</type>
+                            <destination>dist</destination>
+                        </configuration>
+                    </execution>
+                    <!-- Ejecución para crear instalador MSI -->
+                    <execution>
+                        <id>msi</id>
+                        <goals>
+                            <goal>jpackage</goal>
+                        </goals>
+                        <configuration>
+                            <type>MSI</type>
+                            <destination>dist-installer</destination>
+                            <winDirChooser>true</winDirChooser>
+                            <winShortcut>true</winShortcut>
+                            <winMenu>true</winMenu>
+                            <winConsole>true</winConsole>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

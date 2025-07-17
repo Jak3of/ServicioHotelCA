@@ -58,6 +58,50 @@
           <finalName>ServicioHotelCA-completo</finalName>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>org.panteleyev</groupId>
+        <artifactId>jpackage-maven-plugin</artifactId>
+        <version>1.6.0</version>
+        <executions>
+          <execution>
+            <id>app-image</id>
+            <goals>
+              <goal>jpackage</goal>
+            </goals>
+            <configuration>
+              <type>APP_IMAGE</type>
+              <destination>dist</destination>
+            </configuration>
+          </execution>
+          <execution>
+            <id>msi</id>
+            <goals>
+              <goal>jpackage</goal>
+            </goals>
+            <configuration>
+              <type>MSI</type>
+              <destination>dist-installer</destination>
+              <winDirChooser>true</winDirChooser>
+              <winShortcut>true</winShortcut>
+              <winMenu>true</winMenu>
+              <winConsole>true</winConsole>
+            </configuration>
+          </execution>
+        </executions>
+        <configuration>
+          <name>ServicioHotelCA</name>
+          <appVersion>1.0</appVersion>
+          <vendor>ServicioHotelCA</vendor>
+          <destination>dist</destination>
+          <input>target</input>
+          <mainJar>ServicioHotelCA-ejecutable.jar</mainJar>
+          <mainClass>com.mycompany.avanceproyecto.AvanceProyecto</mainClass>
+          <javaOptions>
+            <option>-Dfile.encoding=UTF-8</option>
+          </javaOptions>
+          <type>APP_IMAGE</type>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <dependencies>

@@ -3,3 +3,5 @@ target/
 *.class
 *.db
 /nbproject/
+
+dist/

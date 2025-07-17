@@ -13,23 +13,62 @@ public class DatabaseConfig {
     
     // Método para obtener la ruta robusta de la base de datos
     private static String getDBPath() {
-        String userHome = System.getProperty("user.home");
-        String appDataDir = userHome + File.separator + APP_NAME;
+        // Verificar si estamos en modo test
+        boolean isTest = isTestMode();
         
-        // Crear directorio si no existe
-        File appDir = new File(appDataDir);
-        if (!appDir.exists()) {
-            boolean created = appDir.mkdirs();
-            if (created) {
-                logger.info("Directorio de aplicación creado: {}", appDataDir);
-            } else {
-                logger.warn("No se pudo crear directorio de aplicación: {}", appDataDir);
-                // Fallback: usar directorio actual
-                return DB_NAME;
+        if (isTest) {
+            // Para tests: usar base de datos temporal
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String testDbPath = tempDir + File.separator + "test_" + DB_NAME;
+            logger.debug("Usando base de datos de test: {}", testDbPath);
+            return testDbPath;
+        } else {
+            // Para producción: usar directorio del usuario
+            String userHome = System.getProperty("user.home");
+            String appDataDir = userHome + File.separator + APP_NAME;
+            
+            // Crear directorio si no existe
+            File appDir = new File(appDataDir);
+            if (!appDir.exists()) {
+                boolean created = appDir.mkdirs();
+                if (created) {
+                    logger.info("Directorio de aplicación creado: {}", appDataDir);
+                } else {
+                    logger.warn("No se pudo crear directorio de aplicación: {}", appDataDir);
+                    // Fallback: usar directorio actual
+                    return DB_NAME;
+                }
+            }
+            
+            String prodDbPath = appDataDir + File.separator + DB_NAME;
+            logger.debug("Usando base de datos de producción: {}", prodDbPath);
+            return prodDbPath;
+        }
+    }
+    
+    /**
+     * Detecta si estamos ejecutando en modo test
+     */
+    private static boolean isTestMode() {
+        // Verificar si el stack trace contiene clases de test
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        for (StackTraceElement element : stack) {
+            String className = element.getClassName();
+            if (className.contains("Test") || 
+                className.contains("junit") || 
+                className.contains("org.junit") ||
+                className.contains("surefire")) {
+                return true;
             }
         }
         
-        return appDataDir + File.separator + DB_NAME;
+        // Verificar propiedades del sistema
+        String testProperty = System.getProperty("test.mode");
+        if ("true".equals(testProperty)) {
+            return true;
+        }
+        
+        return false;
     }
     
     private static final String URL = "jdbc:sqlite:" + getDBPath();
@@ -85,5 +124,37 @@ public class DatabaseConfig {
             logger.error("Test de conexión falló", e);
             return false;
         }
+    }
+    
+    /**
+     * Limpia la base de datos de test (solo en modo test)
+     */
+    public static void cleanTestDatabase() {
+        if (!isTestMode()) {
+            logger.warn("cleanTestDatabase() llamado fuera de modo test - ignorando");
+            return;
+        }
+        
+        try {
+            String testDbPath = getDBPath();
+            File testDbFile = new File(testDbPath);
+            if (testDbFile.exists()) {
+                boolean deleted = testDbFile.delete();
+                if (deleted) {
+                    logger.info("Base de datos de test eliminada: {}", testDbPath);
+                } else {
+                    logger.warn("No se pudo eliminar base de datos de test: {}", testDbPath);
+                }
+            }
+        } catch (Exception e) {
+            logger.error("Error limpiando base de datos de test", e);
+        }
+    }
+    
+    /**
+     * Obtiene la ruta actual de la base de datos (para debugging)
+     */
+    public static String getCurrentDBPath() {
+        return getDBPath();
     }
 }

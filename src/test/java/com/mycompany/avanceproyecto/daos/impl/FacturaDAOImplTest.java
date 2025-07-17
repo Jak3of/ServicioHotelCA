@@ -40,7 +40,13 @@ public class FacturaDAOImplTest {
     private Facturas factura;
 
     @BeforeAll
-    void setup() throws Exception {
+    static void setup() throws Exception {
+        // Inicializar la base de datos antes de todos los tests
+        com.mycompany.avanceproyecto.config.DatabaseInitializer.initializeDatabase();
+    }
+    
+    @BeforeEach
+    void setupEach() throws Exception {
         long ts = System.currentTimeMillis();
 
         // Cliente único
@@ -71,18 +77,20 @@ public class FacturaDAOImplTest {
         alojamiento.setFechaEntrada(LocalDate.now());
         alojamiento.setFechaSalida(LocalDate.now().plusDays(2));
         alojamientoDAO.insertar(alojamiento);
-    }
-
-    @Test
-    @Order(1)
-    void testInsertarYObtenerPorId() throws Exception {
+        
+        // Factura para todos los tests
         factura = new Facturas();
         factura.setFecha(LocalDate.now());
         factura.setCliente(cliente);
         factura.setAlojamiento(alojamiento);
         factura.setTotal(500.0);
         facturaDAO.insertar(factura);
+    }
 
+    @Test
+    @Order(1)
+    void testInsertarYObtenerPorId() throws Exception {
+        // La factura ya está creada en setupEach, solo verificamos que funciona
         Facturas obtenida = facturaDAO.obtenerPorId(factura.getId());
         assertNotNull(obtenida);
         assertEquals(factura.getCliente().getId(), obtenida.getCliente().getId());

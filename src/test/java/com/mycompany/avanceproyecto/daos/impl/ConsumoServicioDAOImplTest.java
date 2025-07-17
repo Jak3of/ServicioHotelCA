@@ -39,23 +39,26 @@ class ConsumoServicioDAOImplTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        // Inicializar la base de datos antes de cada test
+        DatabaseInitializer.initializeDatabase();
+        
         consumoDAO = new ConsumoServicioDAOImpl();
         alojamientoDAO = new AlojamientoDAOImpl();
         clienteDAO = new ClienteDAOImpl();
         servicioDAO = new ServicioDAOImpl();
         habitacionDAO = new HabitacionDAOImpl();
 
-        // Cliente único
-        int timestamp = (int) (System.currentTimeMillis() / 1000);
+        // Cliente único con timestamp más preciso
+        long timestamp = System.currentTimeMillis();
         cliente = new Clientes();
         cliente.setNombre("Test Cliente");
-        cliente.setDni(10000000 + timestamp);
+        cliente.setDni((int) (10000000 + (timestamp % 1000000))); // Usar los últimos 6 dígitos
         cliente.setTelefono(900000000);
         cliente.setCorreo("test" + timestamp + "@mail.com");
         clienteDAO.insertar(cliente);
         cliente = clienteDAO.obtenerPorDni(cliente.getDni());
 
-        // Habitación única
+        // Habitación única con timestamp
         habitacion = new Habitaciones();
         habitacion.setNumero("H" + timestamp);
         habitacion.setTipo("Simple");
@@ -74,14 +77,43 @@ class ConsumoServicioDAOImplTest {
         alojamiento.setFechaSalida(LocalDate.now().plusDays(2));
         alojamientoDAO.insertar(alojamiento);
 
-        // Servicio
+        // Servicio con nombre único
         servicio = new Servicios();
-        servicio.setNombre("TV");
+        servicio.setNombre("TV_" + timestamp);
         servicio.setPrecio(10.0);
         servicioDAO.insertar(servicio);
         servicio = servicioDAO.listar().stream()
-            .filter(s -> s.getNombre().equals("TV"))
+            .filter(s -> s.getNombre().equals("TV_" + timestamp))
             .findFirst().orElseThrow();
+    }
+    
+    @AfterEach
+    void tearDown() throws Exception {
+        // Limpiar datos después de cada test
+        try (var conn = com.mycompany.avanceproyecto.config.DatabaseConfig.getConnection();
+             var stmt = conn.createStatement()) {
+            
+            // Desactivar foreign keys temporalmente
+            stmt.execute("PRAGMA foreign_keys = OFF");
+            
+            // Limpiar tablas en orden inverso de dependencias
+            stmt.execute("DELETE FROM consumo_servicio");
+            stmt.execute("DELETE FROM alojamiento_servicio");
+            stmt.execute("DELETE FROM facturas");
+            stmt.execute("DELETE FROM alojamientos");
+            stmt.execute("DELETE FROM clientes WHERE id > 2"); // Mantener los clientes iniciales
+            stmt.execute("DELETE FROM habitaciones WHERE id > 3"); // Mantener las habitaciones iniciales
+            stmt.execute("DELETE FROM servicios WHERE id > 3"); // Mantener los servicios iniciales
+            
+            // Reactivar foreign keys
+            stmt.execute("PRAGMA foreign_keys = ON");
+        }
+    }
+    
+    @AfterAll
+    static void cleanupTestDatabase() {
+        // Limpiar completamente la base de datos de test al final
+        com.mycompany.avanceproyecto.config.DatabaseConfig.cleanTestDatabase();
     }
 
     @Test
