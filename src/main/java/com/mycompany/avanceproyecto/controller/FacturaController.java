@@ -124,6 +124,49 @@ public class FacturaController {
         }
     }
     
+    // Método para buscar alojamientos por DNI del cliente
+    public void buscarAlojamientosPorDni(int dni) {
+        try {
+            // Buscar cliente por DNI
+            Clientes cliente = clienteService.buscarPorDni(dni);
+            
+            if (cliente != null) {
+                // Cliente encontrado - cargar sus alojamientos
+                view.getTxtIdAlojamiento().setText(String.valueOf(cliente.getId()));
+                view.getTxtCliente().setText(cliente.getNombre());
+                
+                cargarAlojamientosDelCliente(cliente.getId());
+                
+                logger.info("Cliente encontrado: {} (DNI: {})", cliente.getNombre(), dni);
+            } else {
+                // Cliente no encontrado - mostrar opciones
+                String[] opciones = {"Ver lista de clientes", "Cancelar"};
+                int respuesta = JOptionPane.showOptionDialog(view, 
+                    "Cliente con DNI '" + dni + "' no encontrado.\n¿Qué desea hacer?", 
+                    "Cliente no encontrado", 
+                    JOptionPane.YES_NO_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]);
+                
+                if (respuesta == 0) { // Ver lista de clientes
+                    mostrarSelectorClientes();
+                }
+                // Si respuesta == 1 (Cancelar), no hace nada
+                
+                logger.info("Cliente con DNI {} no encontrado", dni);
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar cliente por DNI: {}", dni, e);
+            JOptionPane.showMessageDialog(view, 
+                "Error al buscar cliente: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
     public void cargarConsumosAlojamiento(int filaSeleccionada) {
         try {
             int idAlojamiento = (Integer) view.getTablaFacturas().getValueAt(filaSeleccionada, 0);
@@ -158,15 +201,12 @@ public class FacturaController {
     
     private void generarFactura() {
         try {
-            int filaAlojamiento = view.getTablaFacturas().getSelectedRow();
-            if (filaAlojamiento == -1) {
-                JOptionPane.showMessageDialog(view, 
-                    "Por favor, seleccione un alojamiento para facturar",
-                    "Seleccionar Alojamiento", 
-                    JOptionPane.WARNING_MESSAGE);
-                return;
+            // Primero validar que el alojamiento seleccionado se puede pagar
+            if (!view.validarAlojamientoPago()) {
+                return; // La validación ya muestra el mensaje de error
             }
             
+            int filaAlojamiento = view.getTablaFacturas().getSelectedRow();
             int idAlojamiento = (Integer) view.getTablaFacturas().getValueAt(filaAlojamiento, 0);
             Alojamientos alojamiento = alojamientoService.obtenerAlojamiento(idAlojamiento);
             

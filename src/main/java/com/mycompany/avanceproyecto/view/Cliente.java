@@ -72,6 +72,10 @@ public class Cliente extends JInternalFrame {
         btnsalir.setPreferredSize(buttonSize);
         btnBuscar.setPreferredSize(buttonSize);
         
+        // Configurar campos no editables
+        txtIdCliente.setEditable(false);
+        txtIdCliente.setBackground(new Color(240, 240, 240)); // Color gris claro para indicar que no es editable
+        
         // Configurar tabla
         String[] columnas = {"ID", "Nombre", "DNI", "Teléfono", "Correo"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {

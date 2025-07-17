@@ -251,7 +251,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="btnguardar">
               <Properties>
-                <Property name="text" type="java.lang.String" value="GUARDAR"/>
+                <Property name="text" type="java.lang.String" value="PAGAR"/>
               </Properties>
             </Component>
             <Component class="javax.swing.JButton" name="btncancelar">
@@ -263,6 +263,9 @@
               </Events>
             </Component>
             <Component class="javax.swing.JTextField" name="txtidServicio">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtidServicioActionPerformed"/>
               </Events>
@@ -300,7 +303,7 @@
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                <TitledBorder title="LISTADO DE PAGO"/>
+                <TitledBorder title="LISTADO DE ALOJAMIENTOS"/>
               </Border>
             </Property>
           </Properties>
@@ -315,10 +318,12 @@
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel3" min="-2" pref="63" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="txtbuscar" min="-2" pref="202" max="-2" attributes="0"/>
-                              <EmptySpace min="-2" pref="51" max="-2" attributes="0"/>
+                              <Component id="txtbuscar" min="-2" pref="116" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="btsbuscar" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
                               <Component id="btneliminar" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="32767" attributes="0"/>
                               <Component id="btnsalir" min="-2" max="-2" attributes="0"/>
@@ -343,6 +348,7 @@
                           <Component id="btsbuscar" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btneliminar" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnsalir" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="jScrollPane3" min="-2" pref="116" max="-2" attributes="0"/>
@@ -384,7 +390,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="btsbuscar">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Buscar"/>
+                <Property name="text" type="java.lang.String" value="Listar por Cliente"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btsbuscarActionPerformed"/>
@@ -404,6 +410,14 @@
               <Properties>
                 <Property name="text" type="java.lang.String" value="REGISTRO"/>
               </Properties>
+            </Component>
+            <Component class="javax.swing.JButton" name="jButton1">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Buscar por DNI"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+              </Events>
             </Component>
           </SubComponents>
         </Container>

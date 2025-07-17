@@ -200,6 +200,7 @@ public class Habitacion extends JInternalFrame {
         jPanel3.setBackground(new java.awt.Color(255, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("REGISTRO DE HABITACION"));
 
+        txtIdHabita.setEditable(false);
         txtIdHabita.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtIdHabitaActionPerformed(evt);

@@ -197,6 +197,9 @@
           </Layout>
           <SubComponents>
             <Component class="javax.swing.JTextField" name="txtIdalojamiento">
+              <Properties>
+                <Property name="editable" type="boolean" value="false"/>
+              </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="txtIdalojamientoActionPerformed"/>
               </Events>

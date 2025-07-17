@@ -1,5 +1,23 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates    // Método para limpiar el formulario
+    public void limpiarFormulario() {
+        txtIdalojamiento.setText("");
+        txtidcliente.setText(""); // DNI del cliente
+        txtxliente.setText(""); // Nombre del cliente
+        txtidhabitacion.setText(""); // Número de habitación
+        txthabitacion.setText(""); // Tipo de habitación
+        txtcosto.setText("");
+        dcfechaingreso.setDate(null);
+        dcfechasalida.setDate(null);
+        tablalistadoalojamiento.clearSelection();
+        
+        // Resetear variables globales
+        clienteIdSeleccionado = 0;
+        habitacionIdSeleccionada = 0;
+        
+        // Establecer fecha de hoy al limpiar (para botón NUEVO)
+        establecerFechaHoy();
+    }e-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package com.mycompany.avanceproyecto.view;
@@ -66,6 +84,9 @@ public class Alojamiento extends JInternalFrame {
         // Resetear variables globales
         clienteIdSeleccionado = 0;
         habitacionIdSeleccionada = 0;
+        
+        // Establecer fecha de hoy al limpiar (para botón NUEVO)
+        establecerFechaHoy();
     }
 
     // Métodos para obtener el cliente y habitación seleccionados
@@ -159,6 +180,9 @@ public class Alojamiento extends JInternalFrame {
                 }
             }
         });
+        
+        // Establecer fecha de hoy al inicializar
+        establecerFechaHoy();
     }
 
     // AGREGAR MÉTODO PARA MOSTRAR DATOS SELECCIONADOS
@@ -294,6 +318,55 @@ public class Alojamiento extends JInternalFrame {
             habitacionIdSeleccionada = 0;
         }
     }
+    
+    // Método para abrir la ventana de gestión de clientes
+    private void abrirGestionClientes() {
+        abrirGestionClientes(0); // Sin DNI predefinido
+    }
+    
+    // Método sobrecargado para abrir la ventana de gestión de clientes con DNI predefinido
+    private void abrirGestionClientes(int dniPredefinido) {
+        try {
+            // Crear una nueva instancia de la ventana Cliente
+            com.mycompany.avanceproyecto.view.Cliente ventanaCliente = 
+                new com.mycompany.avanceproyecto.view.Cliente();
+            
+            // Si hay un DNI predefinido, configurarlo en la ventana
+            if (dniPredefinido > 0) {
+                ventanaCliente.getTxtDni().setText(String.valueOf(dniPredefinido));
+                logger.info("DNI predefinido establecido en gestión de clientes: {}", dniPredefinido);
+            }
+            
+            // Si esta ventana está dentro de un JDesktopPane (MDI), agregarlo al desktop
+            if (this.getDesktopPane() != null) {
+                this.getDesktopPane().add(ventanaCliente);
+                ventanaCliente.setVisible(true);
+                ventanaCliente.toFront();
+                try {
+                    ventanaCliente.setSelected(true);
+                } catch (java.beans.PropertyVetoException e) {
+                    logger.warn("No se pudo seleccionar la ventana de clientes: {}", e.getMessage());
+                }
+            } else {
+                // Si no hay desktop pane, mostrar como ventana independiente
+                JFrame frame = new JFrame("Gestión de Clientes");
+                frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                frame.add(ventanaCliente.getContentPane());
+                frame.setSize(ventanaCliente.getSize());
+                frame.setLocationRelativeTo(this);
+                frame.setVisible(true);
+            }
+            
+            logger.info("Ventana de gestión de clientes abierta desde alojamiento");
+            
+        } catch (Exception e) {
+            logger.error("Error al abrir la ventana de gestión de clientes", e);
+            JOptionPane.showMessageDialog(this, 
+                "Error al abrir la gestión de clientes: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -325,6 +398,8 @@ public class Alojamiento extends JInternalFrame {
         dcfechasalida = new com.toedter.calendar.JDateChooser();
         btnbuscahabitacion = new javax.swing.JButton();
         btnbuscacliente = new javax.swing.JButton();
+        jButton1 = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         tablalistadoalojamiento = new javax.swing.JTable();
@@ -343,6 +418,7 @@ public class Alojamiento extends JInternalFrame {
         jPanel3.setBackground(new java.awt.Color(255, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("REGISTRO DE ALOJAMIENTO"));
 
+        txtIdalojamiento.setEditable(false);
         txtIdalojamiento.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtIdalojamientoActionPerformed(evt);
@@ -409,51 +485,71 @@ public class Alojamiento extends JInternalFrame {
 
         btnbuscacliente.setText("BUSCAR");
 
+        jButton1.setText("? N° hab");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
+        jButton2.setText("? DNI");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(21, 21, 21)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(jPanel3Layout.createSequentialGroup()
+                            .addComponent(btnNuevo)
+                            .addGap(45, 45, 45)
+                            .addComponent(btnguardar)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btncancelar)
+                            .addContainerGap(62, Short.MAX_VALUE)))
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2))
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jLabel2))
                                 .addGap(28, 28, 28)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
-                                        .addComponent(txtidcliente, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txtxliente, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel3Layout.createSequentialGroup()
-                                        .addComponent(txtidhabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(txthabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(txtIdalojamiento, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(btnbuscahabitacion)
-                                    .addComponent(btnbuscacliente)))
-                            .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel12, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtIdalojamiento, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(jPanel3Layout.createSequentialGroup()
-                                .addComponent(btnNuevo)
-                                .addGap(45, 45, 45)
-                                .addComponent(btnguardar)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(btncancelar)
-                                .addGap(46, 46, 46))))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(172, 172, 172)
-                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(txtcosto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(dcfechaingreso, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
-                            .addComponent(dcfechasalida, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
-                .addContainerGap(16, Short.MAX_VALUE))
+                                .addGap(10, 10, 10)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(txtidcliente, javax.swing.GroupLayout.DEFAULT_SIZE, 88, Short.MAX_VALUE)
+                                    .addComponent(txtidhabitacion))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(18, 18, 18)
+                                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(txtxliente, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txthabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnbuscacliente, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnbuscahabitacion, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addGap(19, 19, 19))))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(172, 172, 172)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(txtcosto, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(dcfechaingreso, javax.swing.GroupLayout.DEFAULT_SIZE, 204, Short.MAX_VALUE)
+                    .addComponent(dcfechasalida, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(118, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -464,13 +560,15 @@ public class Alojamiento extends JInternalFrame {
                     .addComponent(jLabel2)
                     .addComponent(txtidhabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txthabitacion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnbuscahabitacion))
+                    .addComponent(btnbuscahabitacion)
+                    .addComponent(jButton1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtidcliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtxliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnbuscacliente))
+                    .addComponent(btnbuscacliente)
+                    .addComponent(jButton2))
                 .addGap(9, 9, 9)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel11, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -644,6 +742,155 @@ public class Alojamiento extends JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btnbuscahabitacionActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Buscar habitación por número
+        buscarHabitacionPorNumero();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        // Buscar cliente por DNI
+        buscarClientePorDni();
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    // Método para buscar habitación por número
+    private void buscarHabitacionPorNumero() {
+        try {
+            String numeroHabitacion = txtidhabitacion.getText().trim();
+            
+            if (numeroHabitacion.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor, ingrese un número de habitación para buscar.", 
+                    "Campo vacío", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Buscar la habitación en la lista (solo disponibles)
+            com.mycompany.avanceproyecto.service.HabitacionService habitacionService = 
+                new com.mycompany.avanceproyecto.service.HabitacionService();
+            List<Habitaciones> habitaciones = habitacionService.listarDisponibles();
+            
+            Habitaciones habitacionEncontrada = null;
+            for (Habitaciones h : habitaciones) {
+                if (h.getNumero().equals(numeroHabitacion)) {
+                    habitacionEncontrada = h;
+                    break;
+                }
+            }
+            
+            if (habitacionEncontrada != null) {
+                // Si se encuentra, llenar los campos automáticamente
+                setHabitacionSeleccionada(
+                    habitacionEncontrada.getId(), 
+                    habitacionEncontrada.getNumero(), 
+                    habitacionEncontrada.getTipo(), 
+                    habitacionEncontrada.getPrecio()
+                );
+                JOptionPane.showMessageDialog(this, 
+                    "Habitación encontrada: " + habitacionEncontrada.getTipo(), 
+                    "Habitación encontrada", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Si no se encuentra, mostrar mensaje y abrir selector
+                int respuesta = JOptionPane.showConfirmDialog(this, 
+                    "Habitación '" + numeroHabitacion + "' no encontrada o no está disponible.\n¿Desea ver la lista completa de habitaciones disponibles?", 
+                    "Habitación no encontrada", 
+                    JOptionPane.YES_NO_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE);
+                
+                if (respuesta == JOptionPane.YES_OPTION) {
+                    // Simular clic en el botón buscar habitación existente
+                    btnbuscahabitacion.doClick();
+                }
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar habitación por número", e);
+            JOptionPane.showMessageDialog(this, 
+                "Error al buscar la habitación: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    // Método para buscar cliente por DNI
+    private void buscarClientePorDni() {
+        try {
+            String dniTexto = txtidcliente.getText().trim();
+            
+            if (dniTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor, ingrese un DNI para buscar.", 
+                    "Campo vacío", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Validar que sea un número
+            int dni;
+            try {
+                dni = Integer.parseInt(dniTexto);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, 
+                    "El DNI debe ser un número válido.", 
+                    "DNI inválido", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Buscar el cliente por DNI
+            com.mycompany.avanceproyecto.service.ClienteService clienteService = 
+                new com.mycompany.avanceproyecto.service.ClienteService();
+            Clientes clienteEncontrado = clienteService.buscarPorDni(dni);
+            
+            if (clienteEncontrado != null) {
+                // Si se encuentra, llenar los campos automáticamente
+                setClienteSeleccionado(
+                    clienteEncontrado.getId(), 
+                    clienteEncontrado.getNombre(), 
+                    clienteEncontrado.getDni()
+                );
+                JOptionPane.showMessageDialog(this, 
+                    "Cliente encontrado: " + clienteEncontrado.getNombre(), 
+                    "Cliente encontrado", 
+                    JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Si no se encuentra, mostrar mensaje con opciones
+                String[] opciones = {"Registrar nuevo cliente", "Ver lista completa", "Cancelar"};
+                int respuesta = JOptionPane.showOptionDialog(this, 
+                    "Cliente con DNI '" + dni + "' no encontrado.\n¿Qué desea hacer?", 
+                    "Cliente no encontrado", 
+                    JOptionPane.YES_NO_CANCEL_OPTION, 
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    opciones,
+                    opciones[0]);
+                
+                if (respuesta == 0) { // Registrar nuevo cliente
+                    abrirGestionClientes(dni); // Pasar el DNI que se ingresó
+                } else if (respuesta == 1) { // Ver lista completa
+                    // Simular clic en el botón buscar cliente existente
+                    btnbuscacliente.doClick();
+                }
+                // Si respuesta == 2 (Cancelar), no hace nada
+            }
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar cliente por DNI", e);
+            JOptionPane.showMessageDialog(this, 
+                "Error al buscar el cliente: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Método helper para establecer la fecha de hoy en el campo de ingreso
+    private void establecerFechaHoy() {
+        java.util.Date fechaHoy = new java.util.Date();
+        dcfechaingreso.setDate(fechaHoy);
+        logger.debug("Fecha de ingreso establecida a hoy: {}", fechaHoy);
+    }
+
     /**
      * @param args the command line arguments
      */
@@ -690,6 +937,8 @@ public class Alojamiento extends JInternalFrame {
     private javax.swing.JButton btsbuscar;
     private com.toedter.calendar.JDateChooser dcfechaingreso;
     private com.toedter.calendar.JDateChooser dcfechasalida;
+    private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;

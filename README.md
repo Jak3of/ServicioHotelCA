@@ -72,6 +72,8 @@ ServicioHotelCA/
    - Registro de estadías
    - Relación cliente-habitación
    - Control de fechas
+   - Estados: ACTIVO/PAGADO/FINALIZADO
+   - Gestión automática de estados
 
 5. **Servicio**
    - Servicios disponibles
@@ -87,14 +89,18 @@ ServicioHotelCA/
    - Generación de comprobantes
    - Cálculo de totales
    - Historial de pagos
+   - Validación de pagos duplicados
+   - Búsqueda por DNI de cliente
 
 ## Características
 
 - Autenticación de usuarios
-- Gestión de habitaciones
-- Registro de clientes
-- Control de alojamientos
-- Facturación de servicios
+- Gestión de habitaciones con filtros de disponibilidad
+- Registro de clientes con autocompletado
+- Control de alojamientos con estados automáticos
+- Facturación de servicios con validación de duplicados
+- Búsqueda rápida por DNI y número de habitación
+- Integración entre módulos (navegación contextual)
 - Reportes y estadísticas
 
 ## Base de Datos
@@ -107,9 +113,10 @@ El sistema utiliza SQLite para almacenamiento de datos:
 ## Seguridad
 
 - Autenticación basada en roles
-- Validación de inputs
-- Logging de eventos
-- Manejo de excepciones
+- Validación de inputs y formatos
+- Prevención de operaciones duplicadas
+- Logging de eventos del sistema
+- Manejo robusto de excepciones
 
 ## Desarrollo
 

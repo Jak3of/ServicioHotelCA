@@ -242,6 +242,7 @@ public class ConsumoServicio extends JInternalFrame {
         jPanel3.setBackground(new java.awt.Color(255, 204, 204));
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("REGISTRO DE CONSUMO DE SERVICIO"));
 
+        txtIdalojamiento.setEditable(false);
         txtIdalojamiento.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtIdalojamientoActionPerformed(evt);

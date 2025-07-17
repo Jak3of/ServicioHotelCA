@@ -468,6 +468,7 @@ public class Servicio extends JInternalFrame {
             }
         });
 
+        txtidServicio.setEditable(false);
         txtidServicio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtidServicioActionPerformed(evt);

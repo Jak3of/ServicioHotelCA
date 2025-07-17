@@ -46,7 +46,7 @@ public class Factura extends JInternalFrame {
 
     private void setupForm() {
         // Configurar tabla de alojamientos del cliente (reemplaza tabla de pagos)
-        String[] columnasAloj = {"ID", "Habitación", "Fecha Entrada", "Fecha Salida", "Precio Hab."};
+        String[] columnasAloj = {"ID", "Habitación", "Fecha Entrada", "Fecha Salida", "Precio Hab.", "Estado"};
         DefaultTableModel modeloAloj = new DefaultTableModel(columnasAloj, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -81,6 +81,7 @@ public class Factura extends JInternalFrame {
         btneliminar.setBackground(btnBackground);
         btnsalir.setBackground(btnBackground);
         btsbuscar.setBackground(btnBackground);
+        jButton1.setBackground(btnBackground);
         
         btnNuevo.setForeground(btnForeground);
         btnguardar.setForeground(btnForeground);
@@ -88,9 +89,10 @@ public class Factura extends JInternalFrame {
         btneliminar.setForeground(btnForeground);
         btnsalir.setForeground(btnForeground);
         btsbuscar.setForeground(btnForeground);
+        jButton1.setForeground(btnForeground);
 
         // Reconfigurar el botón de búsqueda como "Buscar Cliente"
-        btsbuscar.setText("BUSCAR CLIENTE");
+        btsbuscar.setText("Listar por cliente");
         btsbuscar.setPreferredSize(new java.awt.Dimension(140, 25));
         
         // Agregar botón para imprimir (provisional)
@@ -173,6 +175,81 @@ public class Factura extends JInternalFrame {
             JOptionPane.showMessageDialog(this, "Error al cargar consumos: " + e.getMessage());
         }
     }
+    
+    // Método para buscar alojamientos por DNI del cliente
+    private void buscarAlojamientosPorDni() {
+        try {
+            String dniTexto = txtbuscar.getText().trim();
+            
+            if (dniTexto.isEmpty()) {
+                JOptionPane.showMessageDialog(this, 
+                    "Por favor, ingrese un DNI para buscar.", 
+                    "Campo vacío", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Validar que sea un número
+            int dni;
+            try {
+                dni = Integer.parseInt(dniTexto);
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, 
+                    "El DNI debe ser un número válido.", 
+                    "DNI inválido", 
+                    JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            
+            // Delegar la búsqueda al controlador
+            controller.buscarAlojamientosPorDni(dni);
+            
+        } catch (Exception e) {
+            logger.error("Error al buscar alojamientos por DNI", e);
+            JOptionPane.showMessageDialog(this, 
+                "Error al buscar alojamientos: " + e.getMessage(), 
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    // Método para verificar si un alojamiento ya está pagado
+    public boolean verificarEstadoAlojamiento(int filaAlojamiento) {
+        if (filaAlojamiento == -1) {
+            JOptionPane.showMessageDialog(this, 
+                "Por favor, seleccione un alojamiento para procesar el pago",
+                "Seleccionar Alojamiento", 
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        // Obtener el estado del alojamiento desde la tabla (columna 5)
+        String estadoTexto = tablalistadopago.getValueAt(filaAlojamiento, 5).toString();
+        
+        // Verificar si ya está pagado
+        if (estadoTexto.contains("PAGADO")) {
+            String habitacion = tablalistadopago.getValueAt(filaAlojamiento, 1).toString();
+            JOptionPane.showMessageDialog(this, 
+                "El alojamiento en la habitación " + habitacion + " ya ha sido pagado.\n" +
+                "No se puede procesar un pago duplicado.",
+                "Alojamiento Ya Pagado", 
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        // Verificar si está finalizado
+        if (estadoTexto.contains("FINALIZADO")) {
+            String habitacion = tablalistadopago.getValueAt(filaAlojamiento, 1).toString();
+            JOptionPane.showMessageDialog(this, 
+                "El alojamiento en la habitación " + habitacion + " ya está finalizado.\n" +
+                "No se puede procesar el pago de un alojamiento finalizado.",
+                "Alojamiento Finalizado", 
+                JOptionPane.WARNING_MESSAGE);
+            return false;
+        }
+        
+        return true; // Estado ACTIVO - se puede pagar
+    }
 
     public void limpiarFormulario() {
         txtidServicio.setText("");
@@ -193,12 +270,34 @@ public class Factura extends JInternalFrame {
         modelo.setRowCount(0);
         
         for (Alojamientos a : alojamientos) {
+            // Determinar el ícono del estado
+            String estadoTexto = "";
+            if (a.getEstado() != null) {
+                switch (a.getEstado()) {
+                    case ACTIVO:
+                        estadoTexto = "🟡 ACTIVO";
+                        break;
+                    case PAGADO:
+                        estadoTexto = "🟢 PAGADO";
+                        break;
+                    case FINALIZADO:
+                        estadoTexto = "⚪ FINALIZADO";
+                        break;
+                    default:
+                        estadoTexto = "🟡 ACTIVO";
+                        break;
+                }
+            } else {
+                estadoTexto = "🟡 ACTIVO"; // Estado por defecto si es null
+            }
+            
             modelo.addRow(new Object[]{
                 a.getId(),
                 a.getHabitacion().getNumero(),
                 a.getFechaEntrada(),
                 a.getFechaSalida(),
-                a.getHabitacion().getPrecio()
+                a.getHabitacion().getPrecio(),
+                estadoTexto
             });
         }
         
@@ -267,6 +366,12 @@ public class Factura extends JInternalFrame {
     public JButton getBtnGuardar() { return btnguardar; }
     public JButton getBtnEliminar() { return btneliminar; }
     public JButton getBtnBuscar() { return btsbuscar; }
+    
+    // Método público para que el controlador verifique el estado antes de procesar pago
+    public boolean validarAlojamientoPago() {
+        int filaSeleccionada = tablalistadopago.getSelectedRow();
+        return verificarEstadoAlojamiento(filaSeleccionada);
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -305,6 +410,7 @@ public class Factura extends JInternalFrame {
         btneliminar = new javax.swing.JButton();
         btnsalir = new javax.swing.JButton();
         lbltotalregistro = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         tablalistadoconsumo = new javax.swing.JTable();
@@ -340,7 +446,7 @@ public class Factura extends JInternalFrame {
 
         btnNuevo.setText("NUEVO");
 
-        btnguardar.setText("GUARDAR");
+        btnguardar.setText("PAGAR");
 
         btncancelar.setText("CANCELAR");
         btncancelar.addActionListener(new java.awt.event.ActionListener() {
@@ -349,6 +455,7 @@ public class Factura extends JInternalFrame {
             }
         });
 
+        txtidServicio.setEditable(false);
         txtidServicio.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtidServicioActionPerformed(evt);
@@ -457,7 +564,7 @@ public class Factura extends JInternalFrame {
                 .addContainerGap(23, Short.MAX_VALUE))
         );
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("LISTADO DE PAGO"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("LISTADO DE ALOJAMIENTOS"));
 
         tablalistadopago.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -474,7 +581,7 @@ public class Factura extends JInternalFrame {
 
         jLabel3.setText("BUSCAR");
 
-        btsbuscar.setText("Buscar");
+        btsbuscar.setText("Listar por Cliente");
         btsbuscar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btsbuscarActionPerformed(evt);
@@ -487,6 +594,13 @@ public class Factura extends JInternalFrame {
 
         lbltotalregistro.setText("REGISTRO");
 
+        jButton1.setText("Buscar por DNI");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -498,10 +612,12 @@ public class Factura extends JInternalFrame {
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(txtbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 202, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(51, 51, 51)
+                        .addComponent(txtbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btsbuscar)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btneliminar)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(btnsalir)))
@@ -520,7 +636,8 @@ public class Factura extends JInternalFrame {
                     .addComponent(txtbuscar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btsbuscar)
                     .addComponent(btneliminar)
-                    .addComponent(btnsalir))
+                    .addComponent(btnsalir)
+                    .addComponent(jButton1))
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -652,6 +769,11 @@ public class Factura extends JInternalFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txttotalpagoActionPerformed
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Buscar alojamientos por DNI del cliente
+        buscarAlojamientosPorDni();
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -696,6 +818,7 @@ public class Factura extends JInternalFrame {
     private javax.swing.JButton btsbuscar;
     private javax.swing.JComboBox<String> cbotipocomprobante;
     private com.toedter.calendar.JDateChooser dcfechaemision;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
