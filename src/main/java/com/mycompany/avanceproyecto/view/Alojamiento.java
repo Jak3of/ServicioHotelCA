@@ -8,7 +8,6 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
-import java.awt.event.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.List;
@@ -26,12 +25,16 @@ import com.toedter.calendar.JDateChooser;
 public class Alojamiento extends JInternalFrame {
     private static final Logger logger = LoggerFactory.getLogger(Alojamiento.class);
     
+    // Variables globales para almacenar IDs seleccionados
+    private int clienteIdSeleccionado = 0;
+    private int habitacionIdSeleccionada = 0;
+    
     // Agregar getters para el controlador
     public JTextField getTxtIdAlojamiento() { return txtIdalojamiento; }
-    public JTextField getTxtIdHabitacion() { return txtidhabitacion; }
-    public JTextField getTxtHabitacion() { return txthabitacion; }
-    public JTextField getTxtIdCliente() { return txtidcliente; }
-    public JTextField getTxtCliente() { return txtxliente; }
+    public JTextField getTxtDniCliente() { return txtidcliente; } // Ahora representa DNI del cliente
+    public JTextField getTxtNombreCliente() { return txtxliente; } // Nombre del cliente
+    public JTextField getTxtNumeroHabitacion() { return txtidhabitacion; } // Número de habitación  
+    public JTextField getTxtTipoHabitacion() { return txthabitacion; } // Tipo de habitación
     public JTextField getTxtCosto() { return txtcosto; }
     public JDateChooser getFechaEntrada() { return dcfechaingreso; }
     public JDateChooser getFechaSalida() { return dcfechasalida; }
@@ -51,53 +54,74 @@ public class Alojamiento extends JInternalFrame {
     // Método para limpiar el formulario
     public void limpiarFormulario() {
         txtIdalojamiento.setText("");
-        txtidhabitacion.setText("");
-        txthabitacion.setText("");
-        txtidcliente.setText("");
-        txtxliente.setText("");
+        txtidcliente.setText(""); // DNI del cliente
+        txtxliente.setText(""); // Nombre del cliente
+        txtidhabitacion.setText(""); // Número de habitación
+        txthabitacion.setText(""); // Tipo de habitación
         txtcosto.setText("");
         dcfechaingreso.setDate(null);
         dcfechasalida.setDate(null);
         tablalistadoalojamiento.clearSelection();
+        
+        // Resetear variables globales
+        clienteIdSeleccionado = 0;
+        habitacionIdSeleccionada = 0;
     }
 
     // Métodos para obtener el cliente y habitación seleccionados
     public Clientes getClienteSeleccionado() {
         try {
-            int idCliente = Integer.parseInt(txtidcliente.getText());
-            String nombreCliente = txtxliente.getText();
-            return new Clientes(idCliente, 0, nombreCliente, 0, "");
-        } catch (NumberFormatException e) {
+            if (clienteIdSeleccionado > 0) {
+                String nombreCliente = txtxliente.getText(); // Nombre del cliente
+                int dniCliente = 0;
+                try {
+                    dniCliente = Integer.parseInt(txtidcliente.getText()); // DNI del cliente
+                } catch (NumberFormatException e) {
+                    logger.warn("Error al parsear DNI del cliente");
+                }
+                return new Clientes(clienteIdSeleccionado, 0, nombreCliente, dniCliente, "");
+            }
+            return null;
+        } catch (Exception e) {
+            logger.error("Error al obtener cliente seleccionado", e);
             return null;
         }
     }
 
     public Habitaciones getHabitacionSeleccionada() {
         try {
-            int idHabitacion = Integer.parseInt(txtidhabitacion.getText());
-            String numeroHabitacion = txthabitacion.getText();
-            return new Habitaciones(idHabitacion, numeroHabitacion, "", true, 0.0);
-        } catch (NumberFormatException e) {
+            if (habitacionIdSeleccionada > 0) {
+                String numeroHabitacion = txtidhabitacion.getText(); // Número de habitación
+                String tipoHabitacion = txthabitacion.getText(); // Tipo de habitación
+                double precio = 0.0;
+                try {
+                    precio = Double.parseDouble(txtcosto.getText());
+                } catch (NumberFormatException e) {
+                    logger.warn("Error al parsear precio, usando 0.0");
+                }
+                return new Habitaciones(habitacionIdSeleccionada, numeroHabitacion, tipoHabitacion, true, precio);
+            }
+            return null;
+        } catch (Exception e) {
+            logger.error("Error al obtener habitación seleccionada", e);
             return null;
         }
     }
 
-    // Método para actualizar la tabla
-    public void actualizarTabla(List<Alojamientos> alojamientos) {
-        DefaultTableModel modelo = (DefaultTableModel) tablalistadoalojamiento.getModel();
-        modelo.setRowCount(0);
-        
-        for (Alojamientos a : alojamientos) {
-            modelo.addRow(new Object[]{
-                a.getId(),
-                a.getCliente().getNombre(),
-                a.getHabitacion().getNumero(),
-                a.getFechaEntrada(),
-                a.getFechaSalida()
-            });
-        }
-        
-        actualizarTotalRegistros(alojamientos.size());
+    // Métodos para establecer cliente y habitación seleccionados desde los selectores
+    public void setClienteSeleccionado(int idCliente, String nombreCliente, int dniCliente) {
+        this.clienteIdSeleccionado = idCliente;
+        this.txtidcliente.setText(String.valueOf(dniCliente)); // DNI en el primer campo
+        this.txtxliente.setText(nombreCliente); // Nombre en el segundo campo
+        logger.debug("Cliente seleccionado: ID={}, Nombre={}, DNI={}", idCliente, nombreCliente, dniCliente);
+    }
+    
+    public void setHabitacionSeleccionada(int idHabitacion, String numeroHabitacion, String tipoHabitacion, double precio) {
+        this.habitacionIdSeleccionada = idHabitacion;
+        this.txtidhabitacion.setText(numeroHabitacion); // Número en el primer campo
+        this.txthabitacion.setText(tipoHabitacion); // Tipo en el segundo campo
+        this.txtcosto.setText(String.valueOf(precio));
+        logger.debug("Habitación seleccionada: ID={}, Número={}, Tipo={}, Precio={}", idHabitacion, numeroHabitacion, tipoHabitacion, precio);
     }
 
     /**
@@ -146,13 +170,13 @@ public class Alojamiento extends JInternalFrame {
             // ID del alojamiento (columna 0)
             txtIdalojamiento.setText(tablalistadoalojamiento.getValueAt(row, 0).toString());
             
-            // Cliente (columna 1) - necesitamos buscar el ID del cliente
-            String nombreCliente = tablalistadoalojamiento.getValueAt(row, 1).toString();
-            txtxliente.setText(nombreCliente);
+            // Cliente (columna 1) - formato: "Nombre (DNI: 12345678)"
+            String clienteCompleto = tablalistadoalojamiento.getValueAt(row, 1).toString();
+            String nombreCliente = extraerNombreCliente(clienteCompleto);
             
-            // Habitación (columna 2) - necesitamos buscar el ID de la habitación
-            String numeroHabitacion = tablalistadoalojamiento.getValueAt(row, 2).toString();
-            txthabitacion.setText(numeroHabitacion);
+            // Habitación (columna 2) - formato: "Hab. 101 - Suite"
+            String habitacionCompleta = tablalistadoalojamiento.getValueAt(row, 2).toString();
+            String numeroHabitacion = extraerNumeroHabitacion(habitacionCompleta);
             
             // Costo (columna 5)
             String costo = tablalistadoalojamiento.getValueAt(row, 5).toString();
@@ -179,40 +203,9 @@ public class Alojamiento extends JInternalFrame {
                 dcfechasalida.setDate(null);
             }
             
-            // Para obtener los IDs reales, necesitamos buscarlos en el servicio
-            // (esto es opcional, solo si necesitas los IDs exactos)
-            try {
-                // Buscar cliente por nombre para obtener ID
-                com.mycompany.avanceproyecto.service.ClienteService clienteService = 
-                    new com.mycompany.avanceproyecto.service.ClienteService();
-                java.util.List<com.mycompany.avanceproyecto.model.Clientes> clientes = 
-                    clienteService.listarClientes();
-                
-                for (com.mycompany.avanceproyecto.model.Clientes c : clientes) {
-                    if (c.getNombre().equals(nombreCliente)) {
-                        txtidcliente.setText(String.valueOf(c.getId()));
-                        break;
-                    }
-                }
-                
-                // Buscar habitación por número para obtener ID
-                com.mycompany.avanceproyecto.service.HabitacionService habitacionService = 
-                    new com.mycompany.avanceproyecto.service.HabitacionService();
-                java.util.List<com.mycompany.avanceproyecto.model.Habitaciones> habitaciones = 
-                    habitacionService.listarHabitaciones();
-                
-                for (com.mycompany.avanceproyecto.model.Habitaciones h : habitaciones) {
-                    if (h.getNumero().equals(numeroHabitacion)) {
-                        txtidhabitacion.setText(String.valueOf(h.getId()));
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                logger.warn("Error al obtener IDs: {}", e.getMessage());
-                // Si no se pueden obtener los IDs, dejar los campos vacíos
-                txtidcliente.setText("");
-                txtidhabitacion.setText("");
-            }
+            // Buscar datos completos del cliente y habitación usando los nombres extraídos
+            buscarYCargarClientePorNombre(nombreCliente);
+            buscarYCargarHabitacionPorNumero(numeroHabitacion);
             
         } catch (Exception e) {
             logger.error("Error al mostrar datos seleccionados", e);
@@ -222,31 +215,84 @@ public class Alojamiento extends JInternalFrame {
                 javax.swing.JOptionPane.ERROR_MESSAGE);
         }
     }
-
-    private void setupButtons() {
-        // Crear panel específico para botones con FlowLayout
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        
-        // Configurar botones con tamaño uniforme
-        Dimension buttonSize = new Dimension(100, 30);
-        btnNuevo.setPreferredSize(buttonSize);
-        btnguardar.setPreferredSize(buttonSize);
-        btncancelar.setPreferredSize(buttonSize);
-        
-        // Agregar botones al panel
-        buttonPanel.add(btnNuevo);
-        buttonPanel.add(btnguardar);
-        buttonPanel.add(btncancelar);
-        
-        // Agregar el panel de botones al final del panel principal
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0;
-        gbc.gridy = GridBagConstraints.RELATIVE;
-        gbc.gridwidth = 2;
-        gbc.anchor = GridBagConstraints.CENTER;
-        gbc.insets = new Insets(15, 0, 10, 0);
-        
-        jPanel3.add(buttonPanel, gbc);
+    
+    // Método auxiliar para extraer el nombre del cliente del formato "Nombre (DNI: 12345678)"
+    private String extraerNombreCliente(String clienteCompleto) {
+        try {
+            // Buscar la posición del " (DNI:" para extraer solo el nombre
+            int indiceDni = clienteCompleto.indexOf(" (DNI:");
+            if (indiceDni != -1) {
+                return clienteCompleto.substring(0, indiceDni).trim();
+            }
+            // Si no encuentra el formato esperado, devolver el string completo
+            return clienteCompleto.trim();
+        } catch (Exception e) {
+            logger.warn("Error al extraer nombre del cliente: {}", e.getMessage());
+            return clienteCompleto;
+        }
+    }
+    
+    // Método auxiliar para extraer el número de habitación del formato "Hab. 101 - Suite"
+    private String extraerNumeroHabitacion(String habitacionCompleta) {
+        try {
+            // Buscar el patrón "Hab. " al inicio y " - " para separar número del tipo
+            if (habitacionCompleta.startsWith("Hab. ")) {
+                String sinPrefijo = habitacionCompleta.substring(5); // Quitar "Hab. "
+                int indiceTipo = sinPrefijo.indexOf(" - ");
+                if (indiceTipo != -1) {
+                    return sinPrefijo.substring(0, indiceTipo).trim();
+                }
+                // Si no encuentra " - ", devolver todo lo que sigue a "Hab. "
+                return sinPrefijo.trim();
+            }
+            // Si no encuentra el formato esperado, devolver el string completo
+            return habitacionCompleta.trim();
+        } catch (Exception e) {
+            logger.warn("Error al extraer número de habitación: {}", e.getMessage());
+            return habitacionCompleta;
+        }
+    }
+    
+    // Método auxiliar para buscar cliente por nombre y cargar sus datos
+    private void buscarYCargarClientePorNombre(String nombreCliente) {
+        try {
+            com.mycompany.avanceproyecto.service.ClienteService clienteService = 
+                new com.mycompany.avanceproyecto.service.ClienteService();
+            java.util.List<com.mycompany.avanceproyecto.model.Clientes> clientes = 
+                clienteService.listarClientes();
+            
+            for (com.mycompany.avanceproyecto.model.Clientes c : clientes) {
+                if (c.getNombre().equals(nombreCliente)) {
+                    setClienteSeleccionado(c.getId(), c.getNombre(), c.getDni());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error al buscar cliente: {}", e.getMessage());
+            txtxliente.setText(nombreCliente);
+            clienteIdSeleccionado = 0;
+        }
+    }
+    
+    // Método auxiliar para buscar habitación por número y cargar sus datos
+    private void buscarYCargarHabitacionPorNumero(String numeroHabitacion) {
+        try {
+            com.mycompany.avanceproyecto.service.HabitacionService habitacionService = 
+                new com.mycompany.avanceproyecto.service.HabitacionService();
+            java.util.List<com.mycompany.avanceproyecto.model.Habitaciones> habitaciones = 
+                habitacionService.listarHabitaciones();
+            
+            for (com.mycompany.avanceproyecto.model.Habitaciones h : habitaciones) {
+                if (h.getNumero().equals(numeroHabitacion)) {
+                    setHabitacionSeleccionada(h.getId(), h.getNumero(), h.getTipo(), h.getPrecio());
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error al buscar habitación: {}", e.getMessage());
+            txtidhabitacion.setText(numeroHabitacion);
+            habitacionIdSeleccionada = 0;
+        }
     }
 
     /**

@@ -59,10 +59,8 @@ private final JPanel panelGrid;
                         return;
                     }
 
-                    // Asignar la habitación a la vista principal
-                    vistaAlojamiento.getTxtIdHabitacion().setText(String.valueOf(h.getId()));
-                    vistaAlojamiento.getTxtHabitacion().setText(h.getNumero());
-                    vistaAlojamiento.getTxtCosto().setText(String.valueOf(h.getPrecio()));
+                    // Usar el nuevo método para establecer la habitación seleccionada
+                    vistaAlojamiento.setHabitacionSeleccionada(h.getId(), h.getNumero(), h.getTipo(), h.getPrecio());
                     dispose();
                 });
 

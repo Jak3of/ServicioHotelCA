@@ -122,8 +122,8 @@ public class AlojamientoController {
         for (Alojamientos a : alojamientos) {
             modelo.addRow(new Object[]{
                 a.getId(),
-                a.getCliente().getNombre(),
-                a.getHabitacion().getNumero(),
+                a.getCliente().getNombre() + " (DNI: " + a.getCliente().getDni() + ")", // Mostrar nombre y DNI
+                "Hab. " + a.getHabitacion().getNumero() + " - " + a.getHabitacion().getTipo(), // Mostrar número y tipo
                 a.getFechaEntrada(),
                 a.getFechaSalida(),
                 a.getHabitacion().getPrecio()  // Mostrar el precio de la habitación como costo
@@ -191,9 +191,12 @@ public class AlojamientoController {
             if (result == JOptionPane.OK_OPTION) {
                 int fila = tablaTemp.getSelectedRow();
                 if (fila != -1) {
-                    // Actualizar campos del cliente en la vista
-                    view.getTxtIdCliente().setText(tablaTemp.getValueAt(fila, 0).toString());
-                    view.getTxtCliente().setText(tablaTemp.getValueAt(fila, 1).toString());
+                    // Usar el nuevo método para establecer cliente seleccionado
+                    int idCliente = (Integer) tablaTemp.getValueAt(fila, 0);
+                    String nombreCliente = tablaTemp.getValueAt(fila, 1).toString();
+                    int dniCliente = (Integer) tablaTemp.getValueAt(fila, 2);
+                    
+                    view.setClienteSeleccionado(idCliente, nombreCliente, dniCliente);
                 }
             }
         } catch (Exception e) {
