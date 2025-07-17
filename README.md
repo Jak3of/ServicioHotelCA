@@ -106,9 +106,60 @@ ServicioHotelCA/
 ## Base de Datos
 
 El sistema utiliza SQLite para almacenamiento de datos:
-- Archivo: `hotel.db`
+- Separación automática entre entornos de desarrollo y producción
+- Datos de test isolados en ubicaciones temporales
 - Creación automática en primer inicio
 - Datos iniciales precargados
+- Configuración centralizada de conexiones
+
+## Distribución
+
+El sistema soporta múltiples métodos de distribución:
+
+### Proceso de Build Completo
+```bash
+# 1. Compilar y crear JAR con dependencias
+mvn clean package
+
+# 2. Crear aplicación portable
+mvn jpackage:jpackage@app-image
+
+# 3. Crear instalador MSI (requiere WiX)
+mvn jpackage:jpackage@msi
+```
+
+### Aplicación Portable
+```bash
+mvn clean package
+mvn jpackage:jpackage@app-image
+```
+- Ubicación: `dist/ServicioHotelCA/`
+- Autocontenida con JRE incluido
+- No requiere instalación de Java
+
+### Instalador MSI (Windows)
+```bash
+mvn jpackage:jpackage@msi
+```
+- Requiere WiX Toolset instalado
+- Instalación tradicional en Windows
+- Registro en Programas y características
+- Ubicación: `dist-installer/`
+
+### Ejecución desde JAR
+```bash
+java -jar target/ServicioHotelCA-1.0.jar
+```
+- Requiere Java 21+ instalado
+- Todas las dependencias incluidas
+
+### Script Automatizado
+```bash
+crear-instalador.bat
+```
+- Ejecuta todo el proceso automáticamente
+- Detecta si WiX está instalado
+- Crea ambos: aplicación portable e instalador MSI
 
 ## Seguridad
 
@@ -120,12 +171,27 @@ El sistema utiliza SQLite para almacenamiento de datos:
 
 ## Desarrollo
 
+### Configuración de Desarrollo
+- Configuración automática de entorno de desarrollo
+- Base de datos de test separada automáticamente
+- Logging detallado para debugging
+- Suite de tests automatizada (39 tests)
+
+### Contribución al Proyecto
 Para contribuir al proyecto:
 1. Fork del repositorio
 2. Crear rama feature
 3. Commit cambios
 4. Push a la rama
 5. Crear Pull Request
+
+### Testing
+```bash
+mvn test
+```
+- Tests unitarios con cobertura completa
+- Aislamiento de datos de test
+- Verificación automática de funcionalidades críticas
 
 ## Licencia
 
