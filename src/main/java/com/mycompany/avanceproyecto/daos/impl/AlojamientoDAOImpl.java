@@ -18,7 +18,7 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
 
     @Override
     public void insertar(Alojamientos alojamiento) throws Exception {
-        String sql = "INSERT INTO alojamientos (cliente_id, habitacion_id, fecha_entrada, fecha_salida) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO alojamientos (cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
@@ -26,6 +26,7 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
             stmt.setInt(2, alojamiento.getHabitacion().getId());
             stmt.setString(3, alojamiento.getFechaEntrada().toString()); // Guardar como String
             stmt.setString(4, alojamiento.getFechaSalida().toString());  // Guardar como String
+            stmt.setString(5, alojamiento.getEstado().getValor());       // Guardar estado
             
             stmt.executeUpdate();
             
@@ -60,19 +61,24 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
         LocalDate fechaEntrada = LocalDate.parse(rs.getString("fecha_entrada"));
         LocalDate fechaSalida = LocalDate.parse(rs.getString("fecha_salida"));
         
+        // Obtener estado del alojamiento
+        String estadoStr = rs.getString("estado");
+        Alojamientos.EstadoAlojamiento estado = Alojamientos.EstadoAlojamiento.fromString(estadoStr);
+        
         return new Alojamientos(
             rs.getInt("id"),
             cliente,
             habitacion,
             fechaEntrada,
-            fechaSalida
+            fechaSalida,
+            estado
         );
     }
 
     @Override
     public Alojamientos obtenerPorId(int id) throws Exception {
         String sql = """
-            SELECT a.id, a.fecha_entrada, a.fecha_salida,
+            SELECT a.id, a.fecha_entrada, a.fecha_salida, a.estado,
                    c.id as cliente_id, c.nombre, c.dni, c.telefono, c.correo,
                    h.id as habitacion_id, h.numero, h.tipo, h.disponible, h.precio
             FROM alojamientos a
@@ -113,12 +119,17 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
         LocalDate fechaEntrada = LocalDate.parse(rs.getString("fecha_entrada"));
         LocalDate fechaSalida = LocalDate.parse(rs.getString("fecha_salida"));
         
+        // Obtener estado del alojamiento
+        String estadoStr = rs.getString("estado");
+        Alojamientos.EstadoAlojamiento estado = Alojamientos.EstadoAlojamiento.fromString(estadoStr);
+        
         return new Alojamientos(
             rs.getInt("id"),
             cliente,
             habitacion,
             fechaEntrada,
-            fechaSalida
+            fechaSalida,
+            estado  // ← ¡AHORA SÍ INCLUYE EL ESTADO!
         );
     }
 
@@ -172,26 +183,96 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
 
     @Override
     public void actualizar(Alojamientos alojamiento) throws Exception {
-        String sql = "UPDATE alojamientos SET cliente_id = ?, habitacion_id = ?, fecha_entrada = ?, fecha_salida = ? WHERE id = ?";
+        String sql = "UPDATE alojamientos SET cliente_id = ?, habitacion_id = ?, fecha_entrada = ?, fecha_salida = ?, estado = ? WHERE id = ?";
         try (Connection conn = DatabaseConfig.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, alojamiento.getCliente().getId());
             stmt.setInt(2, alojamiento.getHabitacion().getId());
             stmt.setString(3, alojamiento.getFechaEntrada().toString());
             stmt.setString(4, alojamiento.getFechaSalida().toString());
-            stmt.setInt(5, alojamiento.getId());
+            stmt.setString(5, alojamiento.getEstado().getValor());
+            stmt.setInt(6, alojamiento.getId());
             stmt.executeUpdate();
+        }
+    }
+
+    @Override
+    public void actualizarEstado(int id, Alojamientos.EstadoAlojamiento estado) throws Exception {
+        String sql = "UPDATE alojamientos SET estado = ? WHERE id = ?";
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, estado.getValor());
+            stmt.setInt(2, id);
+            int filasAfectadas = stmt.executeUpdate();
+            if (filasAfectadas == 0) {
+                throw new Exception("No se encontró el alojamiento con ID: " + id);
+            }
+            logger.info("Estado del alojamiento {} actualizado a: {}", id, estado.getValor());
         }
     }
 
     
     @Override
     public void eliminar(int id) throws Exception {
-        String sql = "DELETE FROM alojamientos WHERE id = ?";
-        try (Connection conn = DatabaseConfig.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+        Connection conn = null;
+        try {
+            conn = DatabaseConfig.getConnection();
+            conn.setAutoCommit(false); // Iniciar transacción
+            
+            // 1. Verificar si tiene facturas asociadas (NUEVA LÓGICA)
+            String sqlCheckFacturas = "SELECT COUNT(*) FROM facturas WHERE alojamiento_id = ?";
+            try (PreparedStatement stmtCheck = conn.prepareStatement(sqlCheckFacturas)) {
+                stmtCheck.setInt(1, id);
+                try (ResultSet rs = stmtCheck.executeQuery()) {
+                    if (rs.next() && rs.getInt(1) > 0) {
+                        conn.rollback();
+                        throw new Exception("No se puede eliminar el alojamiento porque tiene facturas asociadas. " +
+                                          "Debe procesar el pago en el módulo de Facturas para liberar la habitación.");
+                    }
+                }
+            }
+            
+            // 2. Eliminar servicios asociados al alojamiento
+            String sqlServicios = "DELETE FROM alojamiento_servicio WHERE id_alojamiento = ?";
+            try (PreparedStatement stmtServicios = conn.prepareStatement(sqlServicios)) {
+                stmtServicios.setInt(1, id);
+                int serviciosEliminados = stmtServicios.executeUpdate();
+                logger.debug("Eliminados {} servicios asociados al alojamiento {}", serviciosEliminados, id);
+            }
+            
+            // 3. Eliminar el alojamiento
+            String sqlAlojamiento = "DELETE FROM alojamientos WHERE id = ?";
+            try (PreparedStatement stmtAlojamiento = conn.prepareStatement(sqlAlojamiento)) {
+                stmtAlojamiento.setInt(1, id);
+                int filasAfectadas = stmtAlojamiento.executeUpdate();
+                if (filasAfectadas == 0) {
+                    conn.rollback();
+                    throw new Exception("No se encontró el alojamiento con ID: " + id);
+                }
+                logger.debug("Alojamiento {} eliminado exitosamente", id);
+            }
+            
+            conn.commit(); // Confirmar transacción
+            logger.info("Alojamiento {} eliminado exitosamente (sin facturar)", id);
+            
+        } catch (Exception e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (Exception rollbackEx) {
+                    logger.error("Error al hacer rollback", rollbackEx);
+                }
+            }
+            throw e;
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (Exception closeEx) {
+                    logger.error("Error al cerrar conexión", closeEx);
+                }
+            }
         }
     }
 
@@ -199,7 +280,7 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
     public List<Alojamientos> listar() throws Exception {
         List<Alojamientos> lista = new ArrayList<>();
         String sql = """
-            SELECT a.id, a.fecha_entrada, a.fecha_salida,
+            SELECT a.id, a.fecha_entrada, a.fecha_salida, a.estado,
                    c.id as cliente_id, c.nombre, c.dni, c.telefono, c.correo,
                    h.id as habitacion_id, h.numero, h.tipo, h.disponible, h.precio
             FROM alojamientos a
@@ -234,18 +315,29 @@ public class AlojamientoDAOImpl implements AlojamientoDAO {
                 LocalDate fechaEntrada = LocalDate.parse(rs.getString("fecha_entrada"));
                 LocalDate fechaSalida = LocalDate.parse(rs.getString("fecha_salida"));
                 
-                // Construir el alojamiento
+                // Obtener estado del alojamiento
+                String estadoStr = rs.getString("estado");
+                Alojamientos.EstadoAlojamiento estado = Alojamientos.EstadoAlojamiento.fromString(estadoStr);
+                
+                // Construir el alojamiento con estado
                 Alojamientos alojamiento = new Alojamientos(
                     rs.getInt("id"),
                     cliente,
                     habitacion,
                     fechaEntrada,
-                    fechaSalida
+                    fechaSalida,
+                    estado  // ← ¡INCLUIR EL ESTADO!
                 );
                 
                 lista.add(alojamiento);
             }
         }
         return lista;
+    }
+
+    @Override
+    public void eliminarAlojamientoPagado(int id) throws Exception {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'eliminarAlojamientoPagado'");
     }
 }

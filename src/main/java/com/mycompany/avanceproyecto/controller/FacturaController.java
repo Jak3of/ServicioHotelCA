@@ -171,19 +171,67 @@ public class FacturaController {
             Alojamientos alojamiento = alojamientoService.obtenerAlojamiento(idAlojamiento);
             
             if (alojamiento != null) {
-                service.generarFactura(alojamiento);
-                new HabitacionService().actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), true);
-                JOptionPane.showMessageDialog(view, 
-                    "Factura generada con éxito\nTotal: S/ " + view.getTxtTotal().getText(),
-                    "Factura Generada", 
-                    JOptionPane.INFORMATION_MESSAGE);
-                
-                // Mantener los datos mostrados para poder imprimir
-                // No limpiar automáticamente
+                // Confirmar la facturación
+                int confirmacion = JOptionPane.showConfirmDialog(view,
+                    "¿Confirma que desea procesar el pago y liberar la habitación?\n\n" +
+                    "Cliente: " + alojamiento.getCliente().getNombre() + "\n" +
+                    "Habitación: " + alojamiento.getHabitacion().getNumero() + "\n" +
+                    "Total: S/ " + view.getTxtTotal().getText(),
+                    "Confirmar Pago",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+                    
+                if (confirmacion == JOptionPane.YES_OPTION) {
+                    try {
+                        // 1. Generar la factura
+                        service.generarFactura(alojamiento);
+                        logger.info("✓ Factura generada para alojamiento ID: {}", idAlojamiento);
+                        
+                        // 2. Actualizar estado del alojamiento a PAGADO
+                        logger.info("Intentando actualizar estado del alojamiento {} a PAGADO...", idAlojamiento);
+                        alojamientoService.actualizarEstado(idAlojamiento, Alojamientos.EstadoAlojamiento.PAGADO);
+                        logger.info("✓ Estado del alojamiento {} actualizado a PAGADO exitosamente", idAlojamiento);
+                        
+                        // 3. Verificar que el estado se actualizó correctamente
+                        Alojamientos alojamientoActualizado = alojamientoService.obtenerAlojamiento(idAlojamiento);
+                        logger.info("Estado verificado en BD: {}", alojamientoActualizado.getEstado().getValor());
+                        
+                        // 4. Liberar la habitación (marcarla como disponible)
+                        HabitacionService habitacionService = new HabitacionService();
+                        habitacionService.actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), true);
+                        logger.info("✓ Habitación {} liberada después del pago", alojamiento.getHabitacion().getNumero());
+                        
+                        // 5. Mostrar confirmación
+                        JOptionPane.showMessageDialog(view, 
+                            "✅ PAGO PROCESADO CON ÉXITO\n\n" +
+                            "• Factura generada\n" +
+                            "• Estado cambiado a: " + alojamientoActualizado.getEstado().getValor() + "\n" +
+                            "• Habitación " + alojamiento.getHabitacion().getNumero() + " liberada\n" +
+                            "• Total pagado: S/ " + view.getTxtTotal().getText() + "\n\n" +
+                            "La habitación ya está disponible para nuevos huéspedes.",
+                            "Pago Completado", 
+                            JOptionPane.INFORMATION_MESSAGE);
+                        
+                    } catch (Exception errorPago) {
+                        logger.error("❌ Error específico en el proceso de pago", errorPago);
+                        JOptionPane.showMessageDialog(view, 
+                            "❌ ERROR EN EL PROCESO DE PAGO\n\n" +
+                            "Error específico: " + errorPago.getMessage() + "\n\n" +
+                            "Por favor, verifique los logs para más detalles.",
+                            "Error en Procesamiento",
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                    
+                    // Mantener los datos mostrados para poder imprimir
+                    // No limpiar automáticamente
+                }
             }
         } catch (Exception e) {
             logger.error("Error al generar factura", e);
-            JOptionPane.showMessageDialog(view, "Error al generar factura: " + e.getMessage());
+            JOptionPane.showMessageDialog(view, 
+                "❌ ERROR AL PROCESAR PAGO\n\n" + e.getMessage(),
+                "Error en Facturación",
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     

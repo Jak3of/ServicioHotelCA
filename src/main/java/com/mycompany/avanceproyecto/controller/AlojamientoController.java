@@ -34,7 +34,7 @@ public class AlojamientoController {
     
     private void inicializarControlador() {
         // Configurar la tabla primero
-        String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"};
+        String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo", "Estado"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -68,8 +68,9 @@ public class AlojamientoController {
             Alojamientos alojamiento = new Alojamientos();
             
             // Obtener datos del formulario
-            alojamiento.setId(view.getTxtIdAlojamiento().getText().isEmpty() ? 0 : 
-                            Integer.parseInt(view.getTxtIdAlojamiento().getText()));
+            int idAlojamiento = view.getTxtIdAlojamiento().getText().isEmpty() ? 0 : 
+                               Integer.parseInt(view.getTxtIdAlojamiento().getText());
+            alojamiento.setId(idAlojamiento);
             
             // Convertir java.util.Date a LocalDate
             java.util.Date fechaEntrada = view.getFechaEntrada().getDate();
@@ -90,11 +91,46 @@ public class AlojamientoController {
             alojamiento.setCliente(view.getClienteSeleccionado());
             alojamiento.setHabitacion(view.getHabitacionSeleccionada());
             
-            service.guardarOActualizarAlojamiento(alojamiento);
-            habitacionService.actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), false);
+            // MANEJO DE ESTADOS DE HABITACIONES
+            boolean esNuevoAlojamiento = (idAlojamiento == 0);
+            
+            if (esNuevoAlojamiento) {
+                // NUEVO ALOJAMIENTO: Marcar habitación como ocupada
+                logger.debug("Nuevo alojamiento - marcando habitación {} como ocupada", 
+                           alojamiento.getHabitacion().getId());
+                service.guardarOActualizarAlojamiento(alojamiento);
+                habitacionService.actualizarHabitacionOcupada(alojamiento.getHabitacion().getId(), false); // false = ocupada
+                
+            } else {
+                // ACTUALIZACIÓN: Verificar si cambió la habitación
+                Alojamientos alojamientoAnterior = service.obtenerAlojamiento(idAlojamiento);
+                int habitacionAnteriorId = alojamientoAnterior.getHabitacion().getId();
+                int habitacionNuevaId = alojamiento.getHabitacion().getId();
+                
+                if (habitacionAnteriorId != habitacionNuevaId) {
+                    // Cambió la habitación: liberar la anterior y ocupar la nueva
+                    logger.debug("Cambio de habitación: liberando {} y ocupando {}", 
+                               habitacionAnteriorId, habitacionNuevaId);
+                    
+                    // Actualizar el alojamiento primero
+                    service.guardarOActualizarAlojamiento(alojamiento);
+                    
+                    // Liberar habitación anterior (disponible = true)
+                    habitacionService.actualizarHabitacionOcupada(habitacionAnteriorId, true);
+                    
+                    // Ocupar nueva habitación (disponible = false)
+                    habitacionService.actualizarHabitacionOcupada(habitacionNuevaId, false);
+                    
+                } else {
+                    // Misma habitación: solo actualizar datos del alojamiento
+                    logger.debug("Misma habitación - solo actualizando datos del alojamiento");
+                    service.guardarOActualizarAlojamiento(alojamiento);
+                }
+            }
+            
             JOptionPane.showMessageDialog(view, 
-                alojamiento.getId() == 0 ? "Alojamiento guardado con éxito" : 
-                                         "Alojamiento actualizado con éxito");
+                esNuevoAlojamiento ? "Alojamiento guardado con éxito" : 
+                                   "Alojamiento actualizado con éxito");
             
             limpiarFormulario();
             cargarAlojamientos();
@@ -107,12 +143,18 @@ public class AlojamientoController {
 
     private void cargarAlojamientos() {
         try {
-            List<Alojamientos> alojamientos = service.listarAlojamientos();
+            // Solo mostrar alojamientos activos en la gestión de alojamientos
+            List<Alojamientos> alojamientos = service.listarAlojamientosActivos();
             actualizarTabla(alojamientos);
         } catch (Exception e) {
             logger.error("Error al cargar alojamientos", e);
             JOptionPane.showMessageDialog(view, "Error al cargar alojamientos: " + e.getMessage());
         }
+    }
+    
+    // Método público para recargar la tabla desde otros controladores
+    public void recargarTabla() {
+        cargarAlojamientos();
     }
 
     private void actualizarTabla(List<Alojamientos> alojamientos) {
@@ -120,13 +162,24 @@ public class AlojamientoController {
         modelo.setRowCount(0);
         
         for (Alojamientos a : alojamientos) {
+            // Formatear estado con color visual
+            String estadoFormatted = a.getEstado().getValor();
+            if (a.isActivo()) {
+                estadoFormatted = "🟡 " + estadoFormatted;
+            } else if (a.isPagado()) {
+                estadoFormatted = "🟢 " + estadoFormatted;
+            } else if (a.isFinalizado()) {
+                estadoFormatted = "⚪ " + estadoFormatted;
+            }
+            
             modelo.addRow(new Object[]{
                 a.getId(),
                 a.getCliente().getNombre() + " (DNI: " + a.getCliente().getDni() + ")", // Mostrar nombre y DNI
                 "Hab. " + a.getHabitacion().getNumero() + " - " + a.getHabitacion().getTipo(), // Mostrar número y tipo
                 a.getFechaEntrada(),
                 a.getFechaSalida(),
-                a.getHabitacion().getPrecio()  // Mostrar el precio de la habitación como costo
+                a.getHabitacion().getPrecio(),  // Mostrar el precio de la habitación como costo
+                estadoFormatted  // Estado con indicador visual
             });
         }
         
@@ -150,13 +203,34 @@ public class AlojamientoController {
 
         if (confirmacion == JOptionPane.YES_OPTION) {
             try {
+                // Eliminar alojamiento (incluye eliminación de servicios asociados)
                 service.eliminarAlojamiento(id);
+                
                 JOptionPane.showMessageDialog(view, "Alojamiento eliminado con éxito");
                 cargarAlojamientos();
                 limpiarFormulario();
             } catch (Exception e) {
                 logger.error("Error al eliminar alojamiento", e);
-                JOptionPane.showMessageDialog(view, "Error al eliminar: " + e.getMessage());
+                
+                // Mostrar mensaje más específico según el tipo de error
+                String mensaje;
+                if (e.getMessage().contains("facturas asociadas")) {
+                    mensaje = "❌ NO SE PUEDE ELIMINAR\n\n" +
+                             "Este alojamiento tiene una FACTURA asociada.\n" +
+                             "Para eliminarlo debe:\n\n" +
+                             "💡 OPCIONES:\n" +
+                             "1. Si aún no ha pagado → Ir a 'Facturas' y procesar el pago\n" +
+                             "2. Si ya pagó → El alojamiento se elimina automáticamente\n" +
+                             "3. Si hay error en facturación → Eliminar la factura primero";
+                } else if (e.getMessage().contains("FOREIGN KEY constraint")) {
+                    mensaje = "❌ ERROR DE INTEGRIDAD\n\n" +
+                             "No se puede eliminar porque tiene registros relacionados.\n" +
+                             "Verifique facturas o servicios asociados.";
+                } else {
+                    mensaje = "❌ ERROR AL ELIMINAR\n\n" + e.getMessage();
+                }
+                
+                JOptionPane.showMessageDialog(view, mensaje, "Error al Eliminar", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -206,12 +280,24 @@ public class AlojamientoController {
     }
 
     private void mostrarSelectorHabitaciones() {
-  
-    SeleccionarHabitaciones selector = new SeleccionarHabitaciones(view);
-    selector.setVisible(true);
-}
-         
+        try {
+            // Verificar si estamos editando un alojamiento existente
+            int habitacionActualId = 0;
+            if (!view.getTxtIdAlojamiento().getText().isEmpty()) {
+                // Estamos editando: obtener la habitación actual
+                int idAlojamiento = Integer.parseInt(view.getTxtIdAlojamiento().getText());
+                Alojamientos alojamientoActual = service.obtenerAlojamiento(idAlojamiento);
+                habitacionActualId = alojamientoActual.getHabitacion().getId();
+                logger.debug("Editando alojamiento {} - habitación actual: {}", idAlojamiento, habitacionActualId);
+            }
+            
+            SeleccionarHabitaciones selector = new SeleccionarHabitaciones(view, habitacionActualId);
+            selector.setVisible(true);
+        } catch (Exception e) {
+            logger.error("Error al mostrar selector de habitaciones", e);
+            // Fallback: mostrar selector sin habitación actual
+            SeleccionarHabitaciones selector = new SeleccionarHabitaciones(view);
+            selector.setVisible(true);
         }
-    
-
-
+    }
+}

@@ -1,6 +1,7 @@
 
 package com.mycompany.avanceproyecto.daos.impl;
 
+import com.mycompany.avanceproyecto.config.DatabaseInitializer;
 import com.mycompany.avanceproyecto.daos.AlojamientoDAO;
 import com.mycompany.avanceproyecto.daos.ClienteDAO;
 import com.mycompany.avanceproyecto.daos.HabitacionDAO;
@@ -38,6 +39,9 @@ public class AlojamientoDAOImplTest {
 
     @BeforeAll
     void setup() throws Exception {
+        // Initialize the database with the latest schema
+        DatabaseInitializer.initializeDatabase();
+        
         long ts = System.currentTimeMillis();
 
         // Crear cliente único
@@ -111,12 +115,13 @@ habitacion.setId(habitacionConId.getId());
     // Crear alojamiento
     Alojamientos alojamiento = new Alojamientos();
     alojamiento.setCliente(cliente);
-    alojamiento.setHabitacion(habitacionInsertada);  // ⚠️ Aquí es donde antes faltaba
+    alojamiento.setHabitacion(habitacionInsertada);
     alojamiento.setFechaEntrada(LocalDate.now());
     alojamiento.setFechaSalida(LocalDate.now().plusDays(3));
+    // El estado por defecto es ACTIVO desde el constructor
 
     alojamientoDAO.insertar(alojamiento);
-this.alojamiento = alojamiento;
+    this.alojamiento = alojamiento;
     // Verificar que se insertó
     Alojamientos obtenido = alojamientoDAO.obtenerPorId(alojamiento.getId());
     assertNotNull(obtenido);

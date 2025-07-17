@@ -3,6 +3,7 @@ package com.mycompany.avanceproyecto.config;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
 
 public class DatabaseInitializer {
@@ -117,6 +118,7 @@ public class DatabaseInitializer {
                 habitacion_id INTEGER NOT NULL,
                 fecha_entrada TEXT NOT NULL,
                 fecha_salida TEXT NOT NULL,
+                estado TEXT NOT NULL DEFAULT 'ACTIVO' CHECK (estado IN ('ACTIVO', 'PAGADO', 'FINALIZADO')),
                 FOREIGN KEY (cliente_id) REFERENCES clientes(id),
                 FOREIGN KEY (habitacion_id) REFERENCES habitaciones(id)
             )
@@ -158,6 +160,29 @@ public class DatabaseInitializer {
             )
         """);
     }
+    
+    // Ejecutar migraciones de esquema para bases de datos existentes
+    executeSchemaMigrations(conn);
+}
+
+private static void executeSchemaMigrations(Connection conn) throws Exception {
+    try (Statement stmt = conn.createStatement()) {
+        // Verificar si la columna estado ya existe en la tabla alojamientos
+        boolean estadoColumnExists = false;
+        try (ResultSet rs = conn.getMetaData().getColumns(null, null, "alojamientos", "estado")) {
+            estadoColumnExists = rs.next();
+        }
+        
+        // Si la columna estado no existe, agregarla
+        if (!estadoColumnExists) {
+            logger.info("Agregando columna 'estado' a la tabla alojamientos...");
+            stmt.execute("ALTER TABLE alojamientos ADD COLUMN estado TEXT NOT NULL DEFAULT 'ACTIVO'");
+            
+            // Agregar el constraint CHECK por separado (SQLite requiere recrear la tabla para constraints complejas)
+            // Por simplicidad, solo agregamos la columna con el valor por defecto
+            logger.info("Columna 'estado' agregada exitosamente");
+        }
+    }
 }
     private static void insertInitialData(Connection conn) throws Exception {
     try (Statement stmt = conn.createStatement()) {
@@ -196,10 +221,10 @@ public class DatabaseInitializer {
 
         // Alojamientos (cliente_id 1, 2 / habitacion_id 1, 2)
         stmt.execute("""
-            INSERT OR IGNORE INTO alojamientos (id, cliente_id, habitacion_id, fecha_entrada, fecha_salida)
+            INSERT OR IGNORE INTO alojamientos (id, cliente_id, habitacion_id, fecha_entrada, fecha_salida, estado)
             VALUES
-                (1, 1, 1, '2025-06-01', '2025-06-05'),
-                (2, 2, 2, '2025-06-03', '2025-06-07')
+                (1, 1, 1, '2025-06-01', '2025-06-05', 'ACTIVO'),
+                (2, 2, 2, '2025-06-03', '2025-06-07', 'ACTIVO')
         """);
 
         // Facturas

@@ -17,8 +17,15 @@ private final JPanel panelGrid;
     private final JButton btnCerrar;
     private final HabitacionService habitacionService;
     private final Alojamiento vistaAlojamiento;
+    private final int habitacionActualId; // Para permitir seleccionar la habitación actual en edición
+    
     public SeleccionarHabitaciones(Alojamiento vistaAlojamiento) {
+        this(vistaAlojamiento, 0); // Llamar al constructor completo con 0 (sin habitación actual)
+    }
+    
+    public SeleccionarHabitaciones(Alojamiento vistaAlojamiento, int habitacionActualId) {
         this.vistaAlojamiento = vistaAlojamiento;
+        this.habitacionActualId = habitacionActualId;
         this.habitacionService = new HabitacionService();
 
         setTitle("Seleccionar Habitación");
@@ -54,8 +61,11 @@ private final JPanel panelGrid;
                 btn.setBorderPainted(false);
 
                 btn.addActionListener(e -> {
-                    if (!h.isDisponible()) {
-                        JOptionPane.showMessageDialog(this, "La habitación está ocupada.");
+                    // Permitir seleccionar si está disponible O si es la habitación actual del alojamiento
+                    boolean puedeSeleccionar = h.isDisponible() || h.getId() == habitacionActualId;
+                    
+                    if (!puedeSeleccionar) {
+                        JOptionPane.showMessageDialog(this, "La habitación está ocupada y no puede ser seleccionada.");
                         return;
                     }
 

@@ -145,7 +145,7 @@ public class Alojamiento extends JInternalFrame {
         setVisible(true);
         
         // Configurar la tabla
-        String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"};
+        String[] columnas = {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo", "Estado"};
         DefaultTableModel modelo = new DefaultTableModel(columnas, 0);
         tablalistadoalojamiento.setModel(modelo);
         tablalistadoalojamiento.getTableHeader().setReorderingAllowed(false);
@@ -165,7 +165,7 @@ public class Alojamiento extends JInternalFrame {
     private void mostrarDatosSeleccionados(int row) {
         try {
             // Obtener datos de la tabla según las columnas:
-            // {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo"}
+            // {"ID", "Cliente", "Habitación", "Fecha Entrada", "Fecha Salida", "Costo", "Estado"}
             
             // ID del alojamiento (columna 0)
             txtIdalojamiento.setText(tablalistadoalojamiento.getValueAt(row, 0).toString());
